@@ -1,0 +1,11 @@
+This is a test of
+a file
+to transmit via
+LimeSDR
+then to receive it
+via HackRF One
+
+yeeeeeeeet
+0123456789
+
+gonna get me a bit error?
