@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: mpsk_stage6.grc
-# GNU Radio version: 3.8.1.0
+# GNU Radio version: 3.9.5.0
 
 from distutils.version import StrictVersion
 
@@ -25,22 +25,27 @@ from gnuradio import qtgui
 from gnuradio.filter import firdes
 import sip
 from gnuradio import blocks
-import numpy
 from gnuradio import channels
 from gnuradio import digital
 from gnuradio import gr
+from gnuradio.fft import window
 import sys
 import signal
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
+from gnuradio import network
 from gnuradio.qtgui import Range, RangeWidget
+from PyQt5 import QtCore
+
+
+
 from gnuradio import qtgui
 
 class mpsk_stage6(gr.top_block, Qt.QWidget):
 
     def __init__(self):
-        gr.top_block.__init__(self, "mpsk_stage6.grc")
+        gr.top_block.__init__(self, "mpsk_stage6.grc", catch_exceptions=True)
         Qt.QWidget.__init__(self)
         self.setWindowTitle("mpsk_stage6.grc")
         qtgui.util.check_set_qss()
@@ -74,20 +79,22 @@ class mpsk_stage6(gr.top_block, Qt.QWidget):
         # Variables
         ##################################################
         self.sps = sps = 4
+        self.qpsk = qpsk = digital.constellation_rect([0.707+0.707j, -0.707+0.707j, -0.707-0.707j, 0.707-0.707j], [0, 1, 2, 3],
+        4, 2, 2, 1, 1).base()
         self.nfilts = nfilts = 32
+        self.variable_adaptive_algorithm_0 = variable_adaptive_algorithm_0 = digital.adaptive_algorithm_cma( qpsk, .0001, 4).base()
         self.timing_loop_bw = timing_loop_bw = 6.28/100.0
         self.time_offset = time_offset = 1.00
         self.taps = taps = [1.0, 0.25-0.25j, 0.50 + 0.10j, -0.3 + 0.2j]
         self.samp_rate = samp_rate = 32000
         self.rrc_taps = rrc_taps = firdes.root_raised_cosine(nfilts, nfilts, 1.0/float(sps), 0.35, 11*sps*nfilts)
-        self.qpsk = qpsk = digital.constellation_rect([0.707+0.707j, -0.707+0.707j, -0.707-0.707j, 0.707-0.707j], [0, 1, 2, 3],
-        4, 2, 2, 1, 1).base()
         self.phase_bw = phase_bw = 6.28/100.0
-        self.noise_volt = noise_volt = 0.00001
+        self.opsk = opsk = digital.constellation_8psk().base()
+        self.noise_volt = noise_volt = 0.001
         self.freq_offset = freq_offset = 0
         self.excess_bw = excess_bw = 0.35
         self.eq_gain = eq_gain = 0.01
-        self.delay = delay = 50
+        self.delay = delay = 58
         self.arity = arity = 4
 
         ##################################################
@@ -110,14 +117,14 @@ class mpsk_stage6(gr.top_block, Qt.QWidget):
         for c in range(0, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
         self._timing_loop_bw_range = Range(0.0, 0.2, 0.01, 6.28/100.0, 200)
-        self._timing_loop_bw_win = RangeWidget(self._timing_loop_bw_range, self.set_timing_loop_bw, 'Time: BW', "slider", float)
+        self._timing_loop_bw_win = RangeWidget(self._timing_loop_bw_range, self.set_timing_loop_bw, "Time: BW", "slider", float, QtCore.Qt.Horizontal)
         self.controls_grid_layout_1.addWidget(self._timing_loop_bw_win, 0, 0, 1, 1)
         for r in range(0, 1):
             self.controls_grid_layout_1.setRowStretch(r, 1)
         for c in range(0, 1):
             self.controls_grid_layout_1.setColumnStretch(c, 1)
         self._time_offset_range = Range(0.999, 1.001, 0.0001, 1.00, 200)
-        self._time_offset_win = RangeWidget(self._time_offset_range, self.set_time_offset, 'Timing Offset', "counter_slider", float)
+        self._time_offset_win = RangeWidget(self._time_offset_range, self.set_time_offset, "Timing Offset", "counter_slider", float, QtCore.Qt.Horizontal)
         self.controls_grid_layout_0.addWidget(self._time_offset_win, 0, 2, 1, 1)
         for r in range(0, 1):
             self.controls_grid_layout_0.setRowStretch(r, 1)
@@ -139,29 +146,22 @@ class mpsk_stage6(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self._phase_bw_range = Range(0.0, 1.0, 0.01, 6.28/100.0, 200)
-        self._phase_bw_win = RangeWidget(self._phase_bw_range, self.set_phase_bw, 'Phase: Bandwidth', "slider", float)
-        self.controls_grid_layout_1.addWidget(self._phase_bw_win, 0, 2, 1, 1)
-        for r in range(0, 1):
-            self.controls_grid_layout_1.setRowStretch(r, 1)
-        for c in range(2, 3):
-            self.controls_grid_layout_1.setColumnStretch(c, 1)
-        self._noise_volt_range = Range(0.000001, 0.00003, 0.000001, 0.00001, 200)
-        self._noise_volt_win = RangeWidget(self._noise_volt_range, self.set_noise_volt, 'Noise Voltage', "counter_slider", float)
+        self._noise_volt_range = Range(0, 1, 0.01, 0.001, 200)
+        self._noise_volt_win = RangeWidget(self._noise_volt_range, self.set_noise_volt, "Noise Voltage", "counter_slider", float, QtCore.Qt.Horizontal)
         self.controls_grid_layout_0.addWidget(self._noise_volt_win, 0, 0, 1, 1)
         for r in range(0, 1):
             self.controls_grid_layout_0.setRowStretch(r, 1)
         for c in range(0, 1):
             self.controls_grid_layout_0.setColumnStretch(c, 1)
         self._freq_offset_range = Range(-0.1, 0.1, 0.001, 0, 200)
-        self._freq_offset_win = RangeWidget(self._freq_offset_range, self.set_freq_offset, 'Frequency Offset', "counter_slider", float)
+        self._freq_offset_win = RangeWidget(self._freq_offset_range, self.set_freq_offset, "Frequency Offset", "counter_slider", float, QtCore.Qt.Horizontal)
         self.controls_grid_layout_0.addWidget(self._freq_offset_win, 0, 1, 1, 1)
         for r in range(0, 1):
             self.controls_grid_layout_0.setRowStretch(r, 1)
         for c in range(1, 2):
             self.controls_grid_layout_0.setColumnStretch(c, 1)
-        self._delay_range = Range(0, 200, 1, 50, 200)
-        self._delay_win = RangeWidget(self._delay_range, self.set_delay, 'Delay', "counter_slider", float)
+        self._delay_range = Range(0, 200, 1, 58, 200)
+        self._delay_win = RangeWidget(self._delay_range, self.set_delay, "Delay", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._delay_win, 1, 0, 1, 1)
         for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
@@ -171,7 +171,8 @@ class mpsk_stage6(gr.top_block, Qt.QWidget):
             128, #size
             samp_rate, #samp_rate
             '', #name
-            2 #number of inputs
+            2, #number of inputs
+            None # parent
         )
         self.qtgui_time_sink_x_0_0.set_update_time(0.10)
         self.qtgui_time_sink_x_0_0.set_y_axis(-1, 2)
@@ -212,7 +213,7 @@ class mpsk_stage6(gr.top_block, Qt.QWidget):
             self.qtgui_time_sink_x_0_0.set_line_marker(i, markers[i])
             self.qtgui_time_sink_x_0_0.set_line_alpha(i, alphas[i])
 
-        self._qtgui_time_sink_x_0_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0_0.pyqwidget(), Qt.QWidget)
+        self._qtgui_time_sink_x_0_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0_0.qwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_time_sink_x_0_0_win, 2, 1, 1, 1)
         for r in range(2, 3):
             self.top_grid_layout.setRowStretch(r, 1)
@@ -222,7 +223,8 @@ class mpsk_stage6(gr.top_block, Qt.QWidget):
             500, #size
             samp_rate, #samp_rate
             '', #name
-            1 #number of inputs
+            1, #number of inputs
+            None # parent
         )
         self.qtgui_time_sink_x_0.set_update_time(0.10)
         self.qtgui_time_sink_x_0.set_y_axis(-1, 4)
@@ -263,7 +265,7 @@ class mpsk_stage6(gr.top_block, Qt.QWidget):
             self.qtgui_time_sink_x_0.set_line_marker(i, markers[i])
             self.qtgui_time_sink_x_0.set_line_alpha(i, alphas[i])
 
-        self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.pyqwidget(), Qt.QWidget)
+        self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.qwidget(), Qt.QWidget)
         self.received_grid_layout_1.addWidget(self._qtgui_time_sink_x_0_win, 0, 0, 1, 1)
         for r in range(0, 1):
             self.received_grid_layout_1.setRowStretch(r, 1)
@@ -272,7 +274,8 @@ class mpsk_stage6(gr.top_block, Qt.QWidget):
         self.qtgui_const_sink_x_0 = qtgui.const_sink_c(
             1024, #size
             "", #name
-            1 #number of inputs
+            1, #number of inputs
+            None # parent
         )
         self.qtgui_const_sink_x_0.set_update_time(0.10)
         self.qtgui_const_sink_x_0.set_y_axis(-2, 2)
@@ -307,14 +310,23 @@ class mpsk_stage6(gr.top_block, Qt.QWidget):
             self.qtgui_const_sink_x_0.set_line_marker(i, markers[i])
             self.qtgui_const_sink_x_0.set_line_alpha(i, alphas[i])
 
-        self._qtgui_const_sink_x_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0.pyqwidget(), Qt.QWidget)
+        self._qtgui_const_sink_x_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0.qwidget(), Qt.QWidget)
         self.received_grid_layout_0.addWidget(self._qtgui_const_sink_x_0_win, 0, 0, 1, 1)
         for r in range(0, 1):
             self.received_grid_layout_0.setRowStretch(r, 1)
         for c in range(0, 1):
             self.received_grid_layout_0.setColumnStretch(c, 1)
+        self._phase_bw_range = Range(0.0, 1.0, 0.01, 6.28/100.0, 200)
+        self._phase_bw_win = RangeWidget(self._phase_bw_range, self.set_phase_bw, "Phase: Bandwidth", "slider", float, QtCore.Qt.Horizontal)
+        self.controls_grid_layout_1.addWidget(self._phase_bw_win, 0, 2, 1, 1)
+        for r in range(0, 1):
+            self.controls_grid_layout_1.setRowStretch(r, 1)
+        for c in range(2, 3):
+            self.controls_grid_layout_1.setColumnStretch(c, 1)
+        self.network_tcp_source_0 = network.tcp_source.tcp_source(itemsize=gr.sizeof_char*1,addr='127.0.0.1',port=2000,server=True)
+        self.network_tcp_sink_0 = network.tcp_sink(gr.sizeof_char, 1, '127.0.0.1', 3000,1)
         self._eq_gain_range = Range(0.0, 0.1, 0.001, 0.01, 200)
-        self._eq_gain_win = RangeWidget(self._eq_gain_range, self.set_eq_gain, 'Equalizer: rate', "slider", float)
+        self._eq_gain_win = RangeWidget(self._eq_gain_range, self.set_eq_gain, "Equalizer: rate", "slider", float, QtCore.Qt.Horizontal)
         self.controls_grid_layout_1.addWidget(self._eq_gain_win, 0, 1, 1, 1)
         for r in range(0, 1):
             self.controls_grid_layout_1.setRowStretch(r, 1)
@@ -322,8 +334,8 @@ class mpsk_stage6(gr.top_block, Qt.QWidget):
             self.controls_grid_layout_1.setColumnStretch(c, 1)
         self.digital_pfb_clock_sync_xxx_0 = digital.pfb_clock_sync_ccf(sps, timing_loop_bw, rrc_taps, nfilts, nfilts/2, 1.5, 2)
         self.digital_map_bb_0 = digital.map_bb([0,1,2,3])
-        self.digital_diff_decoder_bb_0 = digital.diff_decoder_bb(4)
-        self.digital_costas_loop_cc_0 = digital.costas_loop_cc(phase_bw, arity, False)
+        self.digital_linear_equalizer_0 = digital.linear_equalizer(15, 2, variable_adaptive_algorithm_0, True, [ ], 'corr_est')
+        self.digital_diff_decoder_bb_0 = digital.diff_decoder_bb(4, digital.DIFF_DIFFERENTIAL)
         self.digital_constellation_modulator_0 = digital.generic_mod(
             constellation=qpsk,
             differential=True,
@@ -331,7 +343,8 @@ class mpsk_stage6(gr.top_block, Qt.QWidget):
             pre_diff_code=True,
             excess_bw=excess_bw,
             verbose=False,
-            log=False)
+            log=False,
+            truncate=False)
         self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(qpsk)
         self.channels_channel_model_0 = channels.channel_model(
             noise_voltage=noise_volt,
@@ -343,39 +356,45 @@ class mpsk_stage6(gr.top_block, Qt.QWidget):
         self.blocks_unpack_k_bits_bb_0_0 = blocks.unpack_k_bits_bb(8)
         self.blocks_unpack_k_bits_bb_0 = blocks.unpack_k_bits_bb(2)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
+        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, 'source.txt', False)
+        self.blocks_file_sink_0.set_unbuffered(True)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_float*1, int(delay))
         self.blocks_char_to_float_0_0_0 = blocks.char_to_float(1, 1)
         self.blocks_char_to_float_0_0 = blocks.char_to_float(1, 1)
         self.blocks_char_to_float_0 = blocks.char_to_float(1, 1)
-        self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 100, 10000))), True)
-
 
 
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.analog_random_source_x_0, 0), (self.blocks_unpack_k_bits_bb_0_0, 0))
-        self.connect((self.analog_random_source_x_0, 0), (self.digital_constellation_modulator_0, 0))
         self.connect((self.blocks_char_to_float_0, 0), (self.qtgui_time_sink_x_0, 0))
         self.connect((self.blocks_char_to_float_0_0, 0), (self.qtgui_time_sink_x_0_0, 0))
         self.connect((self.blocks_char_to_float_0_0_0, 0), (self.blocks_delay_0, 0))
         self.connect((self.blocks_delay_0, 0), (self.qtgui_time_sink_x_0_0, 1))
         self.connect((self.blocks_throttle_0, 0), (self.channels_channel_model_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.blocks_char_to_float_0_0, 0))
+        self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.network_tcp_sink_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0_0, 0), (self.blocks_char_to_float_0_0_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
         self.connect((self.digital_constellation_decoder_cb_0, 0), (self.blocks_char_to_float_0, 0))
         self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_diff_decoder_bb_0, 0))
         self.connect((self.digital_constellation_modulator_0, 0), (self.blocks_throttle_0, 0))
-        self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_constellation_decoder_cb_0, 0))
-        self.connect((self.digital_costas_loop_cc_0, 0), (self.qtgui_const_sink_x_0, 0))
         self.connect((self.digital_diff_decoder_bb_0, 0), (self.digital_map_bb_0, 0))
+        self.connect((self.digital_linear_equalizer_0, 0), (self.digital_constellation_decoder_cb_0, 0))
+        self.connect((self.digital_linear_equalizer_0, 0), (self.qtgui_const_sink_x_0, 0))
         self.connect((self.digital_map_bb_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))
-        self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_costas_loop_cc_0, 0))
+        self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_linear_equalizer_0, 0))
+        self.connect((self.network_tcp_source_0, 0), (self.blocks_file_sink_0, 0))
+        self.connect((self.network_tcp_source_0, 0), (self.blocks_unpack_k_bits_bb_0_0, 0))
+        self.connect((self.network_tcp_source_0, 0), (self.digital_constellation_modulator_0, 0))
+
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "mpsk_stage6")
         self.settings.setValue("geometry", self.saveGeometry())
+        self.stop()
+        self.wait()
+
         event.accept()
 
     def get_sps(self):
@@ -385,12 +404,24 @@ class mpsk_stage6(gr.top_block, Qt.QWidget):
         self.sps = sps
         self.set_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0/float(self.sps), 0.35, 11*self.sps*self.nfilts))
 
+    def get_qpsk(self):
+        return self.qpsk
+
+    def set_qpsk(self, qpsk):
+        self.qpsk = qpsk
+
     def get_nfilts(self):
         return self.nfilts
 
     def set_nfilts(self, nfilts):
         self.nfilts = nfilts
         self.set_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0/float(self.sps), 0.35, 11*self.sps*self.nfilts))
+
+    def get_variable_adaptive_algorithm_0(self):
+        return self.variable_adaptive_algorithm_0
+
+    def set_variable_adaptive_algorithm_0(self, variable_adaptive_algorithm_0):
+        self.variable_adaptive_algorithm_0 = variable_adaptive_algorithm_0
 
     def get_timing_loop_bw(self):
         return self.timing_loop_bw
@@ -429,18 +460,17 @@ class mpsk_stage6(gr.top_block, Qt.QWidget):
         self.rrc_taps = rrc_taps
         self.digital_pfb_clock_sync_xxx_0.update_taps(self.rrc_taps)
 
-    def get_qpsk(self):
-        return self.qpsk
-
-    def set_qpsk(self, qpsk):
-        self.qpsk = qpsk
-
     def get_phase_bw(self):
         return self.phase_bw
 
     def set_phase_bw(self, phase_bw):
         self.phase_bw = phase_bw
-        self.digital_costas_loop_cc_0.set_loop_bandwidth(self.phase_bw)
+
+    def get_opsk(self):
+        return self.opsk
+
+    def set_opsk(self, opsk):
+        self.opsk = opsk
 
     def get_noise_volt(self):
         return self.noise_volt
@@ -483,6 +513,7 @@ class mpsk_stage6(gr.top_block, Qt.QWidget):
 
 
 
+
 def main(top_block_cls=mpsk_stage6, options=None):
 
     if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
@@ -491,10 +522,15 @@ def main(top_block_cls=mpsk_stage6, options=None):
     qapp = Qt.QApplication(sys.argv)
 
     tb = top_block_cls()
+
     tb.start()
+
     tb.show()
 
     def sig_handler(sig=None, frame=None):
+        tb.stop()
+        tb.wait()
+
         Qt.QApplication.quit()
 
     signal.signal(signal.SIGINT, sig_handler)
@@ -504,12 +540,7 @@ def main(top_block_cls=mpsk_stage6, options=None):
     timer.start(500)
     timer.timeout.connect(lambda: None)
 
-    def quitting():
-        tb.stop()
-        tb.wait()
-    qapp.aboutToQuit.connect(quitting)
     qapp.exec_()
-
 
 if __name__ == '__main__':
     main()

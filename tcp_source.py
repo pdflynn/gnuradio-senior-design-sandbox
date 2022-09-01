@@ -14,14 +14,15 @@ with open("transmit_msg.txt", "rb") as f:
     message = f.read()
 
 
-try:
-    sock.sendto(message, (IP, PORT))
-    print("sent message")
-    time.sleep(0.1)
-except Exception as e:
-    print(e)
-    print("error!")
-    sock.close()
+while True:
+    try:
+        sock.sendto(message, (IP, PORT))
+        print("sent message")
+        time.sleep(1)
+    except Exception as e:
+        print(e)
+        print("error!")
+        sock.close()
 # finally:
 #     print("closing socket")
 #     sock.close()
