@@ -9,21 +9,29 @@ sock.connect((IP, PORT))
 
 BARKER_13 = b"7989"
 asdf = b"1111100110101"
-with open("transmit_msg.txt", "rb") as f:
+messages = list()
+with open("LONG_transmit_msg.txt", "rb") as f:
     # message = str.encode("Greetings!")
-    message = f.read()
+    messages = f.readlines()
+    # while True:
+    #     chunk = f.read(8) # read 8 bytes
+    #     messages.append(chunk)
+    #     if not chunk:
+    #         break
 
-
-while True:
-    try:
+# while True:
+try:
+    for message in messages:
+        print("Sending", message)
         sock.sendto(message, (IP, PORT))
-        print("sent message")
-        time.sleep(1)
-    except Exception as e:
-        print(e)
-        print("error!")
-        sock.close()
-# finally:
-#     print("closing socket")
-#     sock.close()
-#     time.sleep(1)
+        time.sleep(0.0001)
+    sock.sendto(str.encode(" "), (IP, PORT)) # for some reason the last packet gets "stuck"
+
+except Exception as e:
+    print(e)
+    print("error!")
+    sock.close()
+finally:
+    print("closing socket")
+    sock.close()
+    time.sleep(1)

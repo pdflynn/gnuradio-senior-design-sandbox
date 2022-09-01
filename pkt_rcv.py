@@ -157,7 +157,7 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
         self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(bpsk)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
         self.blocks_tagged_stream_to_pdu_0 = blocks.tagged_stream_to_pdu(blocks.byte_t, 'packet_len')
-        self.blocks_socket_pdu_0 = blocks.socket_pdu('TCP_CLIENT', "127.0.0.1", '3000', 10000, False)
+        self.blocks_socket_pdu_0 = blocks.socket_pdu('TCP_CLIENT', "127.0.0.1", '3000', 1000, True)
         self.blocks_repack_bits_bb_1 = blocks.repack_bits_bb(1, 8, "packet_len", False, gr.GR_MSB_FIRST)
         self.blocks_message_debug_1 = blocks.message_debug(True)
 

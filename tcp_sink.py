@@ -12,7 +12,7 @@ sock.listen(1)
 (client, addr) = sock.accept()
 print("connected to", client, addr)
 while True:
-    data = client.recv(10000)
+    data = client.recv(1000)
     if not data: break
     print(data)
     with open("received.txt", "wb") as f:
