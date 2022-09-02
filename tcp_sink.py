@@ -1,5 +1,6 @@
 import socket
 import time
+import os
 
 IP = "127.0.0.1"
 PORT = 3000
@@ -9,11 +10,17 @@ sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.bind((IP, PORT))
 sock.listen(1)
 
+filename = "received.txt"
+
+# delete output file if it exists
+if os.path.exists(filename):
+    os.remove(filename)
+
 (client, addr) = sock.accept()
 print("connected to", client, addr)
 while True:
-    data = client.recv(1000)
+    data = client.recv(1500)
     if not data: break
     print(data)
-    with open("received.txt", "wb") as f:
+    with open(filename, "ab") as f:
         f.write(data)

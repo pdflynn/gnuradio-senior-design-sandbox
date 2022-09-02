@@ -80,9 +80,11 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
         # Variables
         ##################################################
         self.usrp_rate = usrp_rate = 768000
-        self.sps = sps = 2
-        self.samp_rate = samp_rate = 48000
+        self.sps = sps = 4
+        self.samp_rate = samp_rate = 100e3
         self.rs_ratio = rs_ratio = 1.040
+        self.qpsk = qpsk = digital.constellation_rect([0.707+0.707j, -0.707+0.707j, -0.707-0.707j, 0.707-0.707j], [0, 1, 2, 3],
+        4, 2, 2, 1, 1).base()
         self.excess_bw = excess_bw = 0.35
         self.bpsk = bpsk = digital.constellation_bpsk().base()
 
@@ -145,7 +147,7 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
         self.epy_block_0 = epy_block_0.blk()
         self.digital_crc32_async_bb_1 = digital.crc32_async_bb(False)
         self.digital_constellation_modulator_0 = digital.generic_mod(
-            constellation=bpsk,
+            constellation=qpsk,
             differential=True,
             samples_per_symbol=sps,
             pre_diff_code=True,
@@ -154,7 +156,7 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
             log=False,
             truncate=False)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
-        self.blocks_socket_pdu_0 = blocks.socket_pdu('TCP_SERVER', "127.0.0.1", '2000', 10000, False)
+        self.blocks_socket_pdu_0 = blocks.socket_pdu('TCP_SERVER', "127.0.0.1", '2000', 56, True)
         self.blocks_pdu_to_tagged_stream_0 = blocks.pdu_to_tagged_stream(blocks.byte_t, 'packet_len')
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(0.5)
 
@@ -209,6 +211,12 @@ class pkt_xmt(gr.top_block, Qt.QWidget):
     def set_rs_ratio(self, rs_ratio):
         self.rs_ratio = rs_ratio
         self.mmse_resampler_xx_0.set_resamp_ratio(1.0/((self.usrp_rate/self.samp_rate)*self.rs_ratio))
+
+    def get_qpsk(self):
+        return self.qpsk
+
+    def set_qpsk(self, qpsk):
+        self.qpsk = qpsk
 
     def get_excess_bw(self):
         return self.excess_bw

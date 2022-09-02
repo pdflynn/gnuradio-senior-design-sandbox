@@ -78,16 +78,18 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.sps = sps = 2
-        self.bpsk = bpsk = digital.constellation_bpsk().base()
-        self.variable_adaptive_algorithm_0 = variable_adaptive_algorithm_0 = digital.adaptive_algorithm_cma( bpsk, .0001, sps).base()
+        self.sps = sps = 4
+        self.qpsk = qpsk = digital.constellation_rect([0.707+0.707j, -0.707+0.707j, -0.707-0.707j, 0.707-0.707j], [0, 1, 2, 3],
+        4, 2, 2, 1, 1).base()
+        self.variable_adaptive_algorithm_0 = variable_adaptive_algorithm_0 = digital.adaptive_algorithm_cma( qpsk, .0001, sps).base()
         self.usrp_rate = usrp_rate = 768000
         self.thresh = thresh = 1
-        self.samp_rate = samp_rate = 48000
+        self.samp_rate = samp_rate = 100e3
         self.rs_ratio = rs_ratio = 1.0
         self.phase_bw = phase_bw = 0.0628
         self.order = order = 2
         self.excess_bw = excess_bw = 0.35
+        self.bpsk = bpsk = digital.constellation_bpsk().base()
 
         ##################################################
         # Blocks
@@ -142,22 +144,22 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
             1.0,
             1.0,
             1.5,
-            1,
-            digital.constellation_bpsk().base(),
+            2,
+            digital.constellation_qpsk().base(),
             digital.IR_MMSE_8TAP,
             128,
             [])
-        self.digital_map_bb_0 = digital.map_bb([0,1])
-        self.digital_linear_equalizer_0 = digital.linear_equalizer(15, 1, variable_adaptive_algorithm_0, True, [ ], 'corr_est')
-        self.digital_diff_decoder_bb_0 = digital.diff_decoder_bb(2, digital.DIFF_DIFFERENTIAL)
+        self.digital_map_bb_0_0 = digital.map_bb([0,1,2,3])
+        self.digital_linear_equalizer_0 = digital.linear_equalizer(15, 2, variable_adaptive_algorithm_0, True, [ ], 'corr_est')
+        self.digital_diff_decoder_bb_0_0 = digital.diff_decoder_bb(4, digital.DIFF_DIFFERENTIAL)
         self.digital_crc32_async_bb_0 = digital.crc32_async_bb(True)
-        self.digital_costas_loop_cc_0 = digital.costas_loop_cc(phase_bw, order, False)
         self.digital_correlate_access_code_xx_ts_0 = digital.correlate_access_code_bb_ts("11100001010110101110100010010011",
           thresh, 'packet_len')
-        self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(bpsk)
+        self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(qpsk)
+        self.blocks_unpack_k_bits_bb_0 = blocks.unpack_k_bits_bb(2)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
         self.blocks_tagged_stream_to_pdu_0 = blocks.tagged_stream_to_pdu(blocks.byte_t, 'packet_len')
-        self.blocks_socket_pdu_0 = blocks.socket_pdu('TCP_CLIENT', "127.0.0.1", '3000', 1000, True)
+        self.blocks_socket_pdu_0 = blocks.socket_pdu('TCP_CLIENT', "127.0.0.1", '3000', 1500, True)
         self.blocks_repack_bits_bb_1 = blocks.repack_bits_bb(1, 8, "packet_len", False, gr.GR_MSB_FIRST)
         self.blocks_message_debug_1 = blocks.message_debug(True)
 
@@ -170,13 +172,13 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
         self.msg_connect((self.digital_crc32_async_bb_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))
         self.connect((self.blocks_repack_bits_bb_1, 0), (self.blocks_tagged_stream_to_pdu_0, 0))
         self.connect((self.blocks_throttle_0, 0), (self.digital_symbol_sync_xx_0, 0))
-        self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_diff_decoder_bb_0, 0))
+        self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.digital_correlate_access_code_xx_ts_0, 0))
+        self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_diff_decoder_bb_0_0, 0))
         self.connect((self.digital_correlate_access_code_xx_ts_0, 0), (self.blocks_repack_bits_bb_1, 0))
-        self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_constellation_decoder_cb_0, 0))
-        self.connect((self.digital_costas_loop_cc_0, 0), (self.qtgui_const_sink_x_0, 0))
-        self.connect((self.digital_diff_decoder_bb_0, 0), (self.digital_map_bb_0, 0))
-        self.connect((self.digital_linear_equalizer_0, 0), (self.digital_costas_loop_cc_0, 0))
-        self.connect((self.digital_map_bb_0, 0), (self.digital_correlate_access_code_xx_ts_0, 0))
+        self.connect((self.digital_diff_decoder_bb_0_0, 0), (self.digital_map_bb_0_0, 0))
+        self.connect((self.digital_linear_equalizer_0, 0), (self.digital_constellation_decoder_cb_0, 0))
+        self.connect((self.digital_linear_equalizer_0, 0), (self.qtgui_const_sink_x_0, 0))
+        self.connect((self.digital_map_bb_0_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.digital_linear_equalizer_0, 0))
         self.connect((self.mmse_resampler_xx_0, 0), (self.blocks_throttle_0, 0))
         self.connect((self.zeromq_sub_source_0, 0), (self.mmse_resampler_xx_0, 0))
@@ -196,11 +198,11 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
     def set_sps(self, sps):
         self.sps = sps
 
-    def get_bpsk(self):
-        return self.bpsk
+    def get_qpsk(self):
+        return self.qpsk
 
-    def set_bpsk(self, bpsk):
-        self.bpsk = bpsk
+    def set_qpsk(self, qpsk):
+        self.qpsk = qpsk
 
     def get_variable_adaptive_algorithm_0(self):
         return self.variable_adaptive_algorithm_0
@@ -241,7 +243,6 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
 
     def set_phase_bw(self, phase_bw):
         self.phase_bw = phase_bw
-        self.digital_costas_loop_cc_0.set_loop_bandwidth(self.phase_bw)
         self.digital_symbol_sync_xx_0.set_loop_bandwidth(self.phase_bw)
 
     def get_order(self):
@@ -255,6 +256,12 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
 
     def set_excess_bw(self, excess_bw):
         self.excess_bw = excess_bw
+
+    def get_bpsk(self):
+        return self.bpsk
+
+    def set_bpsk(self, bpsk):
+        self.bpsk = bpsk
 
 
 
