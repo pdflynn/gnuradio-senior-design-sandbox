@@ -219,43 +219,6 @@ blocks:
     coordinate: [960, 452.0]
     rotation: 0
     state: true
-- name: blocks_socket_pdu_0
-  id: blocks_socket_pdu
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    host: '"127.0.0.1"'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    mtu: '1500'
-    port: '3000'
-    tcp_no_delay: 'True'
-    type: TCP_CLIENT
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1248, 588.0]
-    rotation: 0
-    state: true
-- name: blocks_tagged_stream_to_pdu_0
-  id: blocks_tagged_stream_to_pdu
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    tag: packet_len
-    type: byte
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1168, 460.0]
-    rotation: 0
-    state: true
 - name: blocks_throttle_0
   id: blocks_throttle
   parameters:
@@ -762,16 +725,13 @@ blocks:
     state: true
 
 connections:
-- [blocks_repack_bits_bb_1, '0', blocks_tagged_stream_to_pdu_0, '0']
 - [blocks_repack_bits_bb_1, '0', pdu_tagged_stream_to_pdu_0, '0']
-- [blocks_tagged_stream_to_pdu_0, pdus, digital_crc32_async_bb_0, in]
 - [blocks_throttle_0, '0', qtgui_time_sink_x_0, '0']
 - [blocks_throttle_0, '0', virtual_sink_0, '0']
 - [blocks_unpack_k_bits_bb_0, '0', digital_correlate_access_code_xx_ts_0, '0']
 - [digital_constellation_decoder_cb_0, '0', virtual_sink_1, '0']
 - [digital_correlate_access_code_xx_ts_0, '0', blocks_repack_bits_bb_1, '0']
 - [digital_crc32_async_bb_0, out, blocks_message_debug_1, print]
-- [digital_crc32_async_bb_0, out, blocks_socket_pdu_0, pdus]
 - [digital_crc32_async_bb_0, out, network_socket_pdu_0, pdus]
 - [digital_diff_decoder_bb_0_0, '0', digital_map_bb_0_0, '0']
 - [digital_linear_equalizer_0, '0', digital_constellation_decoder_cb_0, '0']

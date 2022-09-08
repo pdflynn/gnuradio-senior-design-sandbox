@@ -71,48 +71,6 @@ blocks:
     coordinate: [344, 11]
     rotation: 0
     state: enabled
-- name: Const_PLD
-  id: variable_constellation
-  parameters:
-    comment: ''
-    const_points: digital.psk_4()[0]
-    dims: '1'
-    normalization: digital.constellation.AMPLITUDE_NORMALIZATION
-    precision: '8'
-    rot_sym: '4'
-    soft_dec_lut: '''auto'''
-    sym_map: digital.psk_4()[1]
-    type: calcdist
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [504, 11]
-    rotation: 0
-    state: disabled
-- name: dec
-  id: variable_cc_decoder_def
-  parameters:
-    comment: ''
-    dim1: '1'
-    dim2: '4'
-    framebits: '8000'
-    k: k
-    mode: fec.CC_TERMINATED
-    ndim: '0'
-    padding: 'False'
-    polys: polys
-    rate: rate
-    state_end: '-1'
-    state_start: '0'
-    value: '"ok"'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [752, 619]
-    rotation: 0
-    state: disabled
 - name: dec
   id: variable_dummy_decoder_def
   parameters:
@@ -129,24 +87,6 @@ blocks:
     coordinate: [360, 523]
     rotation: 0
     state: enabled
-- name: dec
-  id: variable_repetition_decoder_def
-  parameters:
-    comment: ''
-    dim1: '1'
-    dim2: '1'
-    framebits: '8000'
-    ndim: '0'
-    prob: '0.5'
-    rep: rep
-    value: '"ok"'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [552, 539]
-    rotation: 0
-    state: disabled
 - name: eb
   id: variable
   parameters:
@@ -159,27 +99,6 @@ blocks:
     coordinate: [984, 36.0]
     rotation: 0
     state: enabled
-- name: enc
-  id: variable_cc_encoder_def
-  parameters:
-    comment: ''
-    dim1: '1'
-    dim2: '1'
-    framebits: '8000'
-    k: k
-    mode: fec.CC_TERMINATED
-    ndim: '0'
-    padding: 'False'
-    polys: polys
-    rate: rate
-    state_start: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [752, 443]
-    rotation: 0
-    state: disabled
 - name: enc
   id: variable_dummy_encoder_def
   parameters:
@@ -195,22 +114,6 @@ blocks:
     coordinate: [360, 443]
     rotation: 0
     state: enabled
-- name: enc
-  id: variable_repetition_encoder_def
-  parameters:
-    comment: ''
-    dim1: '1'
-    dim2: '1'
-    framebits: '8000'
-    ndim: '0'
-    rep: rep
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [552, 443]
-    rotation: 0
-    state: disabled
 - name: enc_hdr
   id: variable_dummy_encoder_def
   parameters:

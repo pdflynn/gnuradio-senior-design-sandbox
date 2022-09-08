@@ -150,43 +150,6 @@ blocks:
     coordinate: [376, 316.0]
     rotation: 0
     state: true
-- name: blocks_pdu_to_tagged_stream_0
-  id: blocks_pdu_to_tagged_stream
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    tag: packet_len
-    type: byte
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [760, 164.0]
-    rotation: 0
-    state: true
-- name: blocks_socket_pdu_0
-  id: blocks_socket_pdu
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    host: '"127.0.0.1"'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    mtu: '56'
-    port: '2000'
-    tcp_no_delay: 'True'
-    type: TCP_SERVER
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [40, 132.0]
-    rotation: 0
-    state: true
 - name: blocks_throttle_0
   id: blocks_throttle
   parameters:
@@ -310,7 +273,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [48, 164.0]
+    coordinate: [40, 180.0]
     rotation: 0
     state: true
 - name: pdu_pdu_to_tagged_stream_0
@@ -327,7 +290,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [776, 164.0]
+    coordinate: [808, 164.0]
     rotation: 0
     state: true
 - name: qtgui_time_sink_x_0
@@ -477,12 +440,9 @@ blocks:
 connections:
 - [blocks_multiply_const_vxx_0, '0', mmse_resampler_xx_0, '0']
 - [blocks_multiply_const_vxx_0, '0', qtgui_time_sink_x_0, '0']
-- [blocks_pdu_to_tagged_stream_0, '0', digital_constellation_modulator_0, '0']
-- [blocks_socket_pdu_0, pdus, digital_crc32_async_bb_1, in]
 - [blocks_throttle_0, '0', blocks_multiply_const_vxx_0, '0']
 - [digital_constellation_modulator_0, '0', virtual_sink_0, '0']
 - [digital_crc32_async_bb_1, out, epy_block_0, PDU_in]
-- [epy_block_0, PDU_out, blocks_pdu_to_tagged_stream_0, pdus]
 - [epy_block_0, PDU_out, pdu_pdu_to_tagged_stream_0, pdus]
 - [mmse_resampler_xx_0, '0', zeromq_pub_sink_0, '0']
 - [network_socket_pdu_0, pdus, digital_crc32_async_bb_1, in]

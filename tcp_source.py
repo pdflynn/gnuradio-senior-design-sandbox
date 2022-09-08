@@ -20,20 +20,21 @@ with open(filename, "rb") as f:
         if not chunk:
             break
 
-# while True:
-try:
-    for message in messages:
-        delay = 0.1 * random.random()  # wait random amount of time
-        print("Sending", message)
-        sock.sendto(message, (IP, PORT))
-        time.sleep(delay)
-    # sock.sendto(str.encode(" "), (IP, PORT))
+while True:
+    try:
+        for message in messages:
+            delay = 0.1 * random.random()  # wait random amount of time
+            print("Sending", message)
+            sock.sendto(message, (IP, PORT))
+            time.sleep(delay)
+        # sock.sendto(str.encode(" "), (IP, PORT))
 
-except Exception as e:
-    print(e)
-    print("error!")
-    sock.close()
-finally:
-    print("closing socket")
-    sock.close()
-    time.sleep(1)
+    except Exception as e:
+        print(e)
+        print("error!")
+        sock.close()
+        break
+# finally:
+#     print("closing socket")
+#     sock.close()
+#     time.sleep(1)
