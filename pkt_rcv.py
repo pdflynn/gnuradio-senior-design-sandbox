@@ -8,9 +8,9 @@
 # Title: pkt_rcv
 # Author: Barry Duggan
 # Description: packet receive
-# GNU Radio version: 3.9.5.0
+# GNU Radio version: 3.10.3.0
 
-from distutils.version import StrictVersion
+from packaging.version import Version as StrictVersion
 
 if __name__ == '__main__':
     import ctypes
@@ -36,6 +36,8 @@ import signal
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
+from gnuradio import gr, pdu
+from gnuradio import network
 from gnuradio import zeromq
 
 
@@ -94,7 +96,7 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
         ##################################################
         # Blocks
         ##################################################
-        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, -1, '')
+        self.zeromq_sub_source_0 = zeromq.sub_source(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, (-1), '')
         self.qtgui_const_sink_x_0 = qtgui.const_sink_c(
             1024, #size
             "", #name
@@ -102,8 +104,8 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
             None # parent
         )
         self.qtgui_const_sink_x_0.set_update_time(0.10)
-        self.qtgui_const_sink_x_0.set_y_axis(-1, 1)
-        self.qtgui_const_sink_x_0.set_x_axis(-2, 2)
+        self.qtgui_const_sink_x_0.set_y_axis((-1), 1)
+        self.qtgui_const_sink_x_0.set_x_axis((-2), 2)
         self.qtgui_const_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, "")
         self.qtgui_const_sink_x_0.enable_autoscale(False)
         self.qtgui_const_sink_x_0.enable_grid(False)
@@ -136,7 +138,9 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
 
         self._qtgui_const_sink_x_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_const_sink_x_0_win)
-        self.mmse_resampler_xx_0 = filter.mmse_resampler_cc(0, ((usrp_rate/samp_rate)*rs_ratio))
+        self.pdu_tagged_stream_to_pdu_0 = pdu.tagged_stream_to_pdu(gr.types.byte_t, 'packet_len')
+        self.network_socket_pdu_0 = network.socket_pdu('TCP_CLIENT', '127.0.0.1', '3000', 10000, False)
+        self.mmse_resampler_xx_0 = filter.mmse_resampler_cc(0, (((usrp_rate/samp_rate)*rs_ratio)))
         self.digital_symbol_sync_xx_0 = digital.symbol_sync_cc(
             digital.TED_MUELLER_AND_MULLER,
             sps,
@@ -153,13 +157,12 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
         self.digital_linear_equalizer_0 = digital.linear_equalizer(15, 2, variable_adaptive_algorithm_0, True, [ ], 'corr_est')
         self.digital_diff_decoder_bb_0_0 = digital.diff_decoder_bb(4, digital.DIFF_DIFFERENTIAL)
         self.digital_crc32_async_bb_0 = digital.crc32_async_bb(True)
+        self.digital_costas_loop_cc_0 = digital.costas_loop_cc(phase_bw, order, False)
         self.digital_correlate_access_code_xx_ts_0 = digital.correlate_access_code_bb_ts("11100001010110101110100010010011",
           thresh, 'packet_len')
         self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(qpsk)
         self.blocks_unpack_k_bits_bb_0 = blocks.unpack_k_bits_bb(2)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
-        self.blocks_tagged_stream_to_pdu_0 = blocks.tagged_stream_to_pdu(blocks.byte_t, 'packet_len')
-        self.blocks_socket_pdu_0 = blocks.socket_pdu('TCP_CLIENT', "127.0.0.1", '3000', 1500, True)
         self.blocks_repack_bits_bb_1 = blocks.repack_bits_bb(1, 8, "packet_len", False, gr.GR_MSB_FIRST)
         self.blocks_message_debug_1 = blocks.message_debug(True)
 
@@ -167,17 +170,18 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.blocks_tagged_stream_to_pdu_0, 'pdus'), (self.digital_crc32_async_bb_0, 'in'))
         self.msg_connect((self.digital_crc32_async_bb_0, 'out'), (self.blocks_message_debug_1, 'print'))
-        self.msg_connect((self.digital_crc32_async_bb_0, 'out'), (self.blocks_socket_pdu_0, 'pdus'))
-        self.connect((self.blocks_repack_bits_bb_1, 0), (self.blocks_tagged_stream_to_pdu_0, 0))
+        self.msg_connect((self.digital_crc32_async_bb_0, 'out'), (self.network_socket_pdu_0, 'pdus'))
+        self.msg_connect((self.pdu_tagged_stream_to_pdu_0, 'pdus'), (self.digital_crc32_async_bb_0, 'in'))
+        self.connect((self.blocks_repack_bits_bb_1, 0), (self.pdu_tagged_stream_to_pdu_0, 0))
         self.connect((self.blocks_throttle_0, 0), (self.digital_symbol_sync_xx_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.digital_correlate_access_code_xx_ts_0, 0))
         self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_diff_decoder_bb_0_0, 0))
         self.connect((self.digital_correlate_access_code_xx_ts_0, 0), (self.blocks_repack_bits_bb_1, 0))
+        self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_constellation_decoder_cb_0, 0))
+        self.connect((self.digital_costas_loop_cc_0, 0), (self.qtgui_const_sink_x_0, 0))
         self.connect((self.digital_diff_decoder_bb_0_0, 0), (self.digital_map_bb_0_0, 0))
-        self.connect((self.digital_linear_equalizer_0, 0), (self.digital_constellation_decoder_cb_0, 0))
-        self.connect((self.digital_linear_equalizer_0, 0), (self.qtgui_const_sink_x_0, 0))
+        self.connect((self.digital_linear_equalizer_0, 0), (self.digital_costas_loop_cc_0, 0))
         self.connect((self.digital_map_bb_0_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.digital_linear_equalizer_0, 0))
         self.connect((self.mmse_resampler_xx_0, 0), (self.blocks_throttle_0, 0))
@@ -215,7 +219,7 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
 
     def set_usrp_rate(self, usrp_rate):
         self.usrp_rate = usrp_rate
-        self.mmse_resampler_xx_0.set_resamp_ratio(((self.usrp_rate/self.samp_rate)*self.rs_ratio))
+        self.mmse_resampler_xx_0.set_resamp_ratio((((self.usrp_rate/self.samp_rate)*self.rs_ratio)))
 
     def get_thresh(self):
         return self.thresh
@@ -229,20 +233,21 @@ class pkt_rcv(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.blocks_throttle_0.set_sample_rate(self.samp_rate)
-        self.mmse_resampler_xx_0.set_resamp_ratio(((self.usrp_rate/self.samp_rate)*self.rs_ratio))
+        self.mmse_resampler_xx_0.set_resamp_ratio((((self.usrp_rate/self.samp_rate)*self.rs_ratio)))
 
     def get_rs_ratio(self):
         return self.rs_ratio
 
     def set_rs_ratio(self, rs_ratio):
         self.rs_ratio = rs_ratio
-        self.mmse_resampler_xx_0.set_resamp_ratio(((self.usrp_rate/self.samp_rate)*self.rs_ratio))
+        self.mmse_resampler_xx_0.set_resamp_ratio((((self.usrp_rate/self.samp_rate)*self.rs_ratio)))
 
     def get_phase_bw(self):
         return self.phase_bw
 
     def set_phase_bw(self, phase_bw):
         self.phase_bw = phase_bw
+        self.digital_costas_loop_cc_0.set_loop_bandwidth(self.phase_bw)
         self.digital_symbol_sync_xx_0.set_loop_bandwidth(self.phase_bw)
 
     def get_order(self):

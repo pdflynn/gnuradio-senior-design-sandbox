@@ -1,7 +1,6 @@
 options:
   parameters:
     author: Barry Duggan
-    catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
     comment: ''
@@ -39,7 +38,6 @@ blocks:
     comment: ''
     const_points: '[-1-1j, -1+1j, 1+1j, 1-1j]'
     dims: '1'
-    normalization: digital.constellation.AMPLITUDE_NORMALIZATION
     precision: '8'
     rot_sym: '4'
     soft_dec_lut: None
@@ -148,30 +146,12 @@ blocks:
     coordinate: [184, 76.0]
     rotation: 0
     state: true
-- name: variable_adaptive_algorithm_0
-  id: variable_adaptive_algorithm
-  parameters:
-    comment: ''
-    cons: bpsk
-    delta: '10.0'
-    ffactor: '0.99'
-    modulus: sps
-    step_size: '.0001'
-    type: cma
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [672, 12.0]
-    rotation: 0
-    state: true
 - name: blocks_message_debug_1
   id: blocks_message_debug
   parameters:
     affinity: ''
     alias: ''
     comment: ''
-    en_uvec: 'True'
   states:
     bus_sink: false
     bus_source: false
@@ -287,7 +267,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 444.0]
+    coordinate: [497, 475]
     rotation: 0
     state: true
 - name: digital_costas_loop_cc_0
@@ -305,7 +285,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [752, 248.0]
+    coordinate: [678, 287]
     rotation: 0
     state: enabled
 - name: digital_crc32_async_bb_0
@@ -329,7 +309,6 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    coding: digital.DIFF_DIFFERENTIAL
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -338,7 +317,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [176, 452.0]
+    coordinate: [181, 441]
     rotation: 0
     state: enabled
 - name: digital_linear_equalizer_0
@@ -631,6 +610,24 @@ blocks:
     coordinate: [680, 116.0]
     rotation: 0
     state: disabled
+- name: variable_adaptive_algorithm_0
+  id: variable_adaptive_algorithm
+  parameters:
+    alias: ''
+    comment: ''
+    cons: bpsk
+    delta: '10.0'
+    ffactor: '0.99'
+    modulus: sps
+    step_size: '.0001'
+    type: cma
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [672, 12.0]
+    rotation: 0
+    state: true
 - name: virtual_sink_0
   id: virtual_sink
   parameters:
@@ -691,7 +688,6 @@ blocks:
     alias: ''
     comment: USRP sample rate = 768kHz
     hwm: '-1'
-    key: ''
     maxoutbuf: '0'
     minoutbuf: '0'
     pass_tags: 'False'
@@ -720,6 +716,7 @@ connections:
 - [digital_diff_decoder_bb_0, '0', digital_map_bb_0, '0']
 - [digital_linear_equalizer_0, '0', digital_costas_loop_cc_0, '0']
 - [digital_map_bb_0, '0', digital_correlate_access_code_xx_ts_0, '0']
+- [digital_symbol_sync_xx_0, '0', digital_costas_loop_cc_0, '0']
 - [digital_symbol_sync_xx_0, '0', digital_linear_equalizer_0, '0']
 - [mmse_resampler_xx_0, '0', blocks_throttle_0, '0']
 - [virtual_source_0, '0', digital_symbol_sync_xx_0, '0']

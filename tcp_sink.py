@@ -20,7 +20,8 @@ if os.path.exists(filename):
 print("connected to", client, addr)
 while True:
     data = client.recv(1500)
-    if not data: break
+    if not data:
+        break
     print(data)
     with open(filename, "ab") as f:
         f.write(data)

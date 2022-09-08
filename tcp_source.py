@@ -1,5 +1,6 @@
 import socket
 import time
+import random
 
 IP = "127.0.0.1"
 PORT = 2000
@@ -14,7 +15,7 @@ with open(filename, "rb") as f:
     # message = str.encode("Greetings!")
     # messages = f.readlines()
     while True:
-        chunk = f.read(16) # read 8 bytes
+        chunk = f.read(16)  # read 8 bytes
         messages.append(chunk)
         if not chunk:
             break
@@ -22,10 +23,11 @@ with open(filename, "rb") as f:
 # while True:
 try:
     for message in messages:
+        delay = 0.1 * random.random()  # wait random amount of time
         print("Sending", message)
         sock.sendto(message, (IP, PORT))
-        time.sleep(.10)
-    sock.sendto(str.encode(" "), (IP, PORT))
+        time.sleep(delay)
+    # sock.sendto(str.encode(" "), (IP, PORT))
 
 except Exception as e:
     print(e)

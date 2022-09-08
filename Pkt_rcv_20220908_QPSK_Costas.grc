@@ -1,6 +1,7 @@
 options:
   parameters:
     author: Barry Duggan
+    catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
     comment: ''
@@ -38,6 +39,7 @@ blocks:
     comment: ''
     const_points: '[-1-1j, -1+1j, 1+1j, 1-1j]'
     dims: '1'
+    normalization: digital.constellation.AMPLITUDE_NORMALIZATION
     precision: '8'
     rot_sym: '4'
     soft_dec_lut: None
@@ -60,18 +62,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [344, 12.0]
-    rotation: 0
-    state: enabled
-- name: nfilts
-  id: variable
-  parameters:
-    comment: ''
-    value: '32'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [352, 572.0]
     rotation: 0
     state: enabled
 - name: order
@@ -116,18 +106,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1168, 28.0]
-    rotation: 0
-    state: enabled
-- name: rrc_taps
-  id: variable
-  parameters:
-    comment: ''
-    value: firdes.root_raised_cosine(nfilts, nfilts, 1.0/float(sps), 0.35, 11*sps*nfilts)
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [272, 668.0]
     rotation: 0
     state: enabled
 - name: rs_ratio
@@ -178,27 +156,6 @@ blocks:
     coordinate: [272, 12.0]
     rotation: 0
     state: enabled
-- name: timing_loop_bw
-  id: variable_qtgui_range
-  parameters:
-    comment: ''
-    gui_hint: ''
-    label: 'Time: BW'
-    min_len: '200'
-    orient: Qt.Horizontal
-    rangeType: float
-    start: '0.0'
-    step: '0.01'
-    stop: '0.2'
-    value: 6.28/100.0
-    widget: slider
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [112, 620.0]
-    rotation: 0
-    state: enabled
 - name: usrp_rate
   id: variable
   parameters:
@@ -211,12 +168,30 @@ blocks:
     coordinate: [184, 76.0]
     rotation: 0
     state: true
+- name: variable_adaptive_algorithm_0
+  id: variable_adaptive_algorithm
+  parameters:
+    comment: ''
+    cons: qpsk
+    delta: '10.0'
+    ffactor: '0.99'
+    modulus: sps
+    step_size: '.0001'
+    type: cma
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [672, 12.0]
+    rotation: 0
+    state: true
 - name: blocks_message_debug_1
   id: blocks_message_debug
   parameters:
     affinity: ''
     alias: ''
     comment: ''
+    en_uvec: 'True'
   states:
     bus_sink: false
     bus_source: false
@@ -329,27 +304,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [992, 244.0]
-    rotation: 0
-    state: true
-- name: digital_corr_est_cc_0
-  id: digital_corr_est_cc
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    mark_delay: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    sps: ''
-    symbols: ''
-    threshold: '0.9'
-    threshold_method: digital.THRESHOLD_ABSOLUTE
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [499, 324]
+    coordinate: [1232, 252.0]
     rotation: 0
     state: true
 - name: digital_correlate_access_code_xx_ts_0
@@ -369,6 +324,24 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [680, 444.0]
+    rotation: 0
+    state: true
+- name: digital_costas_loop_cc_0
+  id: digital_costas_loop_cc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    order: order
+    use_snr: 'False'
+    w: phase_bw
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [928, 280.0]
     rotation: 0
     state: true
 - name: digital_crc32_async_bb_0
@@ -392,6 +365,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
+    coding: digital.DIFF_DIFFERENTIAL
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -421,7 +395,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 248.0]
+    coordinate: [624, 312.0]
     rotation: 0
     state: enabled
 - name: digital_map_bb_0_0
@@ -438,29 +412,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [384, 460.0]
-    rotation: 0
-    state: enabled
-- name: digital_pfb_clock_sync_xxx_0
-  id: digital_pfb_clock_sync_xxx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    filter_size: nfilts
-    init_phase: nfilts/2
-    loop_bw: timing_loop_bw
-    max_dev: '1.5'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    osps: '2'
-    sps: sps
-    taps: rrc_taps
-    type: ccf
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [184, 276.0]
     rotation: 0
     state: enabled
 - name: digital_symbol_sync_xx_0
@@ -487,9 +438,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [688, 772.0]
+    coordinate: [275, 267]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: mmse_resampler_xx_0
   id: mmse_resampler_xx
   parameters:
@@ -506,6 +457,26 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [304, 152.0]
+    rotation: 0
+    state: true
+- name: network_socket_pdu_0
+  id: network_socket_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    host: 127.0.0.1
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    mtu: '10000'
+    port: '3000'
+    tcp_no_delay: 'False'
+    type: TCP_CLIENT
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1192, 604.0]
     rotation: 0
     state: true
 - name: note_0
@@ -525,6 +496,23 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [840, 12.0]
+    rotation: 0
+    state: true
+- name: pdu_tagged_stream_to_pdu_0
+  id: pdu_tagged_stream_to_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    tag: packet_len
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1240, 460.0]
     rotation: 0
     state: true
 - name: qtgui_const_sink_x_0
@@ -616,7 +604,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [992, 300.0]
+    coordinate: [1368, 332.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0
@@ -713,27 +701,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [680, 116.0]
+    coordinate: [688, 116.0]
     rotation: 0
     state: disabled
-- name: variable_adaptive_algorithm_0
-  id: variable_adaptive_algorithm
-  parameters:
-    alias: ''
-    comment: ''
-    cons: qpsk
-    delta: '10.0'
-    ffactor: '0.99'
-    modulus: sps
-    step_size: '.0001'
-    type: cma
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [672, 12.0]
-    rotation: 0
-    state: true
 - name: virtual_sink_0
   id: virtual_sink
   parameters:
@@ -744,7 +714,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [864, 180.0]
+    coordinate: [928, 180.0]
     rotation: 0
     state: true
 - name: virtual_sink_1
@@ -757,7 +727,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 244.0]
+    coordinate: [1464, 196.0]
     rotation: 0
     state: true
 - name: virtual_source_0
@@ -794,6 +764,7 @@ blocks:
     alias: ''
     comment: USRP sample rate = 768kHz
     hwm: '-1'
+    key: ''
     maxoutbuf: '0'
     minoutbuf: '0'
     pass_tags: 'False'
@@ -810,25 +781,28 @@ blocks:
 
 connections:
 - [blocks_repack_bits_bb_1, '0', blocks_tagged_stream_to_pdu_0, '0']
+- [blocks_repack_bits_bb_1, '0', pdu_tagged_stream_to_pdu_0, '0']
 - [blocks_tagged_stream_to_pdu_0, pdus, digital_crc32_async_bb_0, in]
 - [blocks_throttle_0, '0', qtgui_time_sink_x_0, '0']
 - [blocks_throttle_0, '0', virtual_sink_0, '0']
 - [blocks_unpack_k_bits_bb_0, '0', digital_correlate_access_code_xx_ts_0, '0']
 - [digital_constellation_decoder_cb_0, '0', virtual_sink_1, '0']
 - [digital_correlate_access_code_xx_ts_0, '0', blocks_repack_bits_bb_1, '0']
+- [digital_costas_loop_cc_0, '0', digital_constellation_decoder_cb_0, '0']
+- [digital_costas_loop_cc_0, '0', qtgui_const_sink_x_0, '0']
 - [digital_crc32_async_bb_0, out, blocks_message_debug_1, print]
 - [digital_crc32_async_bb_0, out, blocks_socket_pdu_0, pdus]
+- [digital_crc32_async_bb_0, out, network_socket_pdu_0, pdus]
 - [digital_diff_decoder_bb_0_0, '0', digital_map_bb_0_0, '0']
-- [digital_linear_equalizer_0, '0', digital_constellation_decoder_cb_0, '0']
-- [digital_linear_equalizer_0, '0', qtgui_const_sink_x_0, '0']
+- [digital_linear_equalizer_0, '0', digital_costas_loop_cc_0, '0']
 - [digital_map_bb_0_0, '0', blocks_unpack_k_bits_bb_0, '0']
-- [digital_pfb_clock_sync_xxx_0, '0', digital_constellation_decoder_cb_0, '0']
-- [digital_pfb_clock_sync_xxx_0, '0', digital_corr_est_cc_0, '0']
-- [digital_pfb_clock_sync_xxx_0, '0', digital_linear_equalizer_0, '0']
+- [digital_symbol_sync_xx_0, '0', digital_linear_equalizer_0, '0']
 - [mmse_resampler_xx_0, '0', blocks_throttle_0, '0']
-- [virtual_source_0, '0', digital_pfb_clock_sync_xxx_0, '0']
+- [pdu_tagged_stream_to_pdu_0, pdus, digital_crc32_async_bb_0, in]
+- [virtual_source_0, '0', digital_symbol_sync_xx_0, '0']
 - [virtual_source_1, '0', digital_diff_decoder_bb_0_0, '0']
 - [zeromq_sub_source_0, '0', mmse_resampler_xx_0, '0']
 
 metadata:
   file_format: 1
+  grc_version: 3.10.3.0

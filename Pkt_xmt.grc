@@ -1,7 +1,6 @@
 options:
   parameters:
     author: Barry Duggan
-    catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
     comment: ''
@@ -39,7 +38,6 @@ blocks:
     comment: ''
     const_points: '[-1-1j, -1+1j, 1+1j, 1-1j]'
     dims: '1'
-    normalization: digital.constellation.AMPLITUDE_NORMALIZATION
     precision: '8'
     rot_sym: '4'
     soft_dec_lut: None
@@ -199,7 +197,6 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     samples_per_symbol: sps
-    truncate: 'False'
     verbose: 'False'
   states:
     bus_sink: false
@@ -208,6 +205,26 @@ blocks:
     coordinate: [984, 140.0]
     rotation: 0
     state: enabled
+- name: digital_constellation_receiver_cb_0
+  id: digital_constellation_receiver_cb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    constellation: ''
+    fmax: ''
+    fmin: ''
+    loop_bw: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    showports: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1117, 457]
+    rotation: 0
+    state: true
 - name: digital_crc32_async_bb_1
   id: digital_crc32_async_bb
   parameters:
@@ -404,7 +421,6 @@ blocks:
     alias: ''
     comment: USRP sample rate = 768kHz
     hwm: '-1'
-    key: ''
     pass_tags: 'False'
     timeout: '100'
     type: complex
