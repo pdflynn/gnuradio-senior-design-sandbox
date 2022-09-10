@@ -197,7 +197,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1664, 396.0]
+    coordinate: [1440, 356.0]
     rotation: 0
     state: enabled
 - name: digital_constellation_soft_decoder_cf_0_0
@@ -213,7 +213,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1656, 212.0]
+    coordinate: [1424, 196.0]
     rotation: 0
     state: enabled
 - name: digital_corr_est_cc_0
@@ -251,7 +251,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1256, 184.0]
+    coordinate: [1232, 200.0]
     rotation: 0
     state: enabled
 - name: digital_costas_loop_cc_0_0_0
@@ -269,7 +269,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1272, 352.0]
+    coordinate: [1232, 360.0]
     rotation: 0
     state: enabled
 - name: digital_crc32_async_bb_0
@@ -311,7 +311,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [872, 244.0]
+    coordinate: [856, 244.0]
     rotation: 0
     state: enabled
 - name: digital_pfb_clock_sync_xxx_0
@@ -493,25 +493,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1704, 676.0]
-    rotation: 0
-    state: enabled
-- name: pad_sink_1_0
-  id: pad_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    label: prefec
-    num_streams: '1'
-    optional: 'True'
-    type: message
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1464, 676.0]
+    coordinate: [1680, 628.0]
     rotation: 0
     state: enabled
 - name: pad_sink_2
@@ -565,7 +547,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1616, 300.0]
+    coordinate: [1456, 308.0]
     rotation: 0
     state: enabled
 - name: pad_sink_5
@@ -638,7 +620,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1144, 580.0]
+    coordinate: [1200, 580.0]
     rotation: 0
     state: enabled
 - name: pld_const
@@ -735,7 +717,6 @@ connections:
 - [fec_generic_decoder_0, '0', digital_protocol_parser_b_0, '0']
 - [pad_source_0, '0', digital_corr_est_cc_0, '0']
 - [pdu_tagged_stream_to_pdu_0, pdus, fec_async_decoder_0, in]
-- [pdu_tagged_stream_to_pdu_0, pdus, pad_sink_1_0, in]
 
 metadata:
   file_format: 1

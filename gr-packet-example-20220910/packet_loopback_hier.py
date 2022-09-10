@@ -29,6 +29,7 @@ from gnuradio import qtgui
 from gnuradio.filter import firdes
 import sip
 from gnuradio import blocks
+import pmt
 from gnuradio import channels
 from gnuradio import digital
 from gnuradio import fec
@@ -38,11 +39,11 @@ import signal
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
-from gnuradio import network
+from gnuradio import pdu
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
 from packet_rx import packet_rx  # grc-generated hier_block
-from packet_tx_danny import packet_tx_danny  # grc-generated hier_block
+from packet_tx import packet_tx  # grc-generated hier_block
 
 
 
@@ -102,8 +103,6 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
         self.freq_offset = freq_offset = 0
         self.enc_hdr = enc_hdr = fec.repetition_encoder_make(8000, rep)
         self.enc = enc = fec.cc_encoder_make(8000,k, rate, polys, 0, fec.CC_TERMINATED, False)
-        self.dum_enc = dum_enc = fec.dummy_encoder_make(1500)
-        self.dum_dec = dum_dec = fec.dummy_decoder.make(1500)
         self.dec_hdr = dec_hdr = fec.repetition_decoder.make(hdr_format.header_nbits(),rep, 0.5)
         self.dec = dec = fec.cc_decoder.make(8000,k, rate, polys, 0, (-1), fec.CC_TERMINATED, False)
         self.amp = amp = 1.0
@@ -510,27 +509,26 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
 
         self._qtgui_const_sink_x_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0.qwidget(), Qt.QWidget)
         self.tab0_layout_2.addWidget(self._qtgui_const_sink_x_0_win)
-        self.packet_tx_danny_0 = packet_tx_danny(
-            hdr_const=Const_HDR,
+        self.pdu_random_pdu_0 = pdu.random_pdu(20, 200, 0xFF, 2)
+        self.packet_tx_0 = packet_tx(
+            hdr_const=Const_PLD,
             hdr_enc=enc_hdr,
             hdr_format=hdr_format,
             pld_const=Const_PLD,
-            pld_enc=dum_enc,
+            pld_enc=enc,
             psf_taps=tx_rrc_taps,
-            sps=2,
+            sps=sps,
         )
         self.packet_rx_0 = packet_rx(
             eb=eb,
-            hdr_const=Const_HDR,
+            hdr_const=Const_PLD,
             hdr_dec=dec_hdr,
             hdr_format=hdr_format,
             pld_const=Const_PLD,
-            pld_dec=dum_dec,
+            pld_dec=dec,
             psf_taps=rx_rrc_taps,
             sps=sps,
         )
-        self.network_socket_pdu_0_0 = network.socket_pdu('TCP_CLIENT', '127.0.0.1', '3000', 10000, True)
-        self.network_socket_pdu_0 = network.socket_pdu('TCP_SERVER', '127.0.0.1', '2000', 56, True)
         self.channels_channel_model_0 = channels.channel_model(
             noise_voltage=noise,
             frequency_offset=freq_offset,
@@ -539,13 +537,16 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
             noise_seed=0,
             block_tags=True)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(amp)
+        self.blocks_message_strobe_0 = blocks.message_strobe(pmt.intern("TEST"), 1000)
+        self.blocks_message_debug_0_0_0 = blocks.message_debug(True)
 
 
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.network_socket_pdu_0, 'pdus'), (self.packet_tx_danny_0, 'in'))
-        self.msg_connect((self.packet_rx_0, 'pkt out'), (self.network_socket_pdu_0_0, 'pdus'))
+        self.msg_connect((self.blocks_message_strobe_0, 'strobe'), (self.pdu_random_pdu_0, 'generate'))
+        self.msg_connect((self.packet_rx_0, 'pkt out'), (self.blocks_message_debug_0_0_0, 'print_pdu'))
+        self.msg_connect((self.pdu_random_pdu_0, 'pdus'), (self.packet_tx_0, 'in'))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.packet_rx_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.qtgui_const_sink_x_0, 0))
@@ -553,9 +554,9 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
         self.connect((self.channels_channel_model_0, 0), (self.qtgui_time_sink_x_1, 0))
         self.connect((self.packet_rx_0, 1), (self.qtgui_const_sink_x_0_0_0, 0))
         self.connect((self.packet_rx_0, 1), (self.qtgui_freq_sink_x_0_0, 0))
-        self.connect((self.packet_rx_0, 4), (self.qtgui_time_sink_x_1_0_0_0, 0))
+        self.connect((self.packet_rx_0, 0), (self.qtgui_time_sink_x_1_0_0_0, 0))
         self.connect((self.packet_rx_0, 1), (self.qtgui_time_sink_x_1_0_0_1, 0))
-        self.connect((self.packet_tx_danny_0, 0), (self.channels_channel_model_0, 0))
+        self.connect((self.packet_tx_0, 0), (self.channels_channel_model_0, 0))
 
 
     def closeEvent(self, event):
@@ -571,8 +572,10 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
 
     def set_Const_PLD(self, Const_PLD):
         self.Const_PLD = Const_PLD
+        self.packet_rx_0.set_hdr_const(self.Const_PLD)
         self.packet_rx_0.set_pld_const(self.Const_PLD)
-        self.packet_tx_danny_0.set_pld_const(self.Const_PLD)
+        self.packet_tx_0.set_hdr_const(self.Const_PLD)
+        self.packet_tx_0.set_pld_const(self.Const_PLD)
 
     def get_sps(self):
         return self.sps
@@ -582,6 +585,7 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
         self.set_rx_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts*self.sps, 1.0, self.eb, (11*self.sps*self.nfilts)))
         self.set_tx_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0, self.eb, (5*self.sps*self.nfilts)))
         self.packet_rx_0.set_sps(self.sps)
+        self.packet_tx_0.set_sps(self.sps)
 
     def get_rep(self):
         return self.rep
@@ -621,7 +625,7 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
     def set_hdr_format(self, hdr_format):
         self.hdr_format = hdr_format
         self.packet_rx_0.set_hdr_format(self.hdr_format)
-        self.packet_tx_danny_0.set_hdr_format(self.hdr_format)
+        self.packet_tx_0.set_hdr_format(self.hdr_format)
 
     def get_eb(self):
         return self.eb
@@ -637,7 +641,7 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
 
     def set_tx_rrc_taps(self, tx_rrc_taps):
         self.tx_rrc_taps = tx_rrc_taps
-        self.packet_tx_danny_0.set_psf_taps(self.tx_rrc_taps)
+        self.packet_tx_0.set_psf_taps(self.tx_rrc_taps)
 
     def get_time_offset(self):
         return self.time_offset
@@ -672,27 +676,14 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
 
     def set_enc_hdr(self, enc_hdr):
         self.enc_hdr = enc_hdr
-        self.packet_tx_danny_0.set_hdr_enc(self.enc_hdr)
+        self.packet_tx_0.set_hdr_enc(self.enc_hdr)
 
     def get_enc(self):
         return self.enc
 
     def set_enc(self, enc):
         self.enc = enc
-
-    def get_dum_enc(self):
-        return self.dum_enc
-
-    def set_dum_enc(self, dum_enc):
-        self.dum_enc = dum_enc
-        self.packet_tx_danny_0.set_pld_enc(self.dum_enc)
-
-    def get_dum_dec(self):
-        return self.dum_dec
-
-    def set_dum_dec(self, dum_dec):
-        self.dum_dec = dum_dec
-        self.packet_rx_0.set_pld_dec(self.dum_dec)
+        self.packet_tx_0.set_pld_enc(self.enc)
 
     def get_dec_hdr(self):
         return self.dec_hdr
@@ -706,6 +697,7 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
 
     def set_dec(self, dec):
         self.dec = dec
+        self.packet_rx_0.set_pld_dec(self.dec)
 
     def get_amp(self):
         return self.amp
@@ -719,8 +711,6 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
 
     def set_Const_HDR(self, Const_HDR):
         self.Const_HDR = Const_HDR
-        self.packet_rx_0.set_hdr_const(self.Const_HDR)
-        self.packet_tx_danny_0.set_hdr_const(self.Const_HDR)
 
 
 
