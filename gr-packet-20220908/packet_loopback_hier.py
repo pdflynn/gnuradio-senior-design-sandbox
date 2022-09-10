@@ -29,6 +29,7 @@ from gnuradio import qtgui
 from gnuradio.filter import firdes
 import sip
 from gnuradio import blocks
+import pmt
 from gnuradio import channels
 from gnuradio import digital
 from gnuradio import fec
@@ -38,7 +39,6 @@ import signal
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
-from gnuradio import network
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
 from packet_rx import packet_rx  # grc-generated hier_block
@@ -84,9 +84,8 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.Const_PLD = Const_PLD = digital.constellation_calcdist(digital.psk_4()[0], digital.psk_4()[1],
-        4, 1, digital.constellation.AMPLITUDE_NORMALIZATION).base()
-        self.Const_PLD.gen_soft_dec_lut(8)
+        self.Const_PLD = Const_PLD = digital.constellation_calcdist([0.383+0.924j, 0.924+0.383j, 0.924-0.383j, 0.383-0.924j, -0.383-0.924j, -0.924-0.383j, -0.924+0.383j, -0.383+0.924j], [1,0,7,6,5,4,3,2],
+        8, 1, digital.constellation.AMPLITUDE_NORMALIZATION).base()
         self.sps = sps = 2
         self.rep = rep = 3
         self.rate = rate = 2
@@ -95,12 +94,17 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
         self.k = k = 7
         self.hdr_format = hdr_format = digital.header_format_counter(digital.packet_utils.default_access_code, 3, Const_PLD.bits_per_symbol())
         self.eb = eb = 0.22
+        self.unused_qpsk = unused_qpsk = digital.constellation_calcdist(digital.psk_4()[0], digital.psk_4()[1],
+        4, 1, digital.constellation.AMPLITUDE_NORMALIZATION).base()
+        self.unused_qpsk.gen_soft_dec_lut(8)
+        self.unused_16qam = unused_16qam = digital.constellation_calcdist([(-3-3j), (-1-3j), (1-3j), (3-3j), (-3-1j), (-1-1j), (1-1j), (3-1j), (-3+1j), (-1+1j), (1+1j), (3+1j), (-3+3j), (-1+3j), (1+3j), (3+3j)], [0, 4, 12, 8, 1, 5, 13, 9, 3, 7, 15, 11, 2, 6, 14, 10],
+        16, 1, digital.constellation.AMPLITUDE_NORMALIZATION).base()
         self.tx_rrc_taps = tx_rrc_taps = firdes.root_raised_cosine(nfilts, nfilts,1.0, eb, (5*sps*nfilts))
         self.time_offset = time_offset = 1.0
         self.rx_rrc_taps = rx_rrc_taps = firdes.root_raised_cosine(nfilts, nfilts*sps,1.0, eb, (11*sps*nfilts))
         self.noise = noise = 0.0
         self.freq_offset = freq_offset = 0
-        self.enc_hdr = enc_hdr = fec.repetition_encoder_make(8000, rep)
+        self.enc_hdr = enc_hdr = fec.repetition_encoder_make(128, rep)
         self.enc = enc = fec.cc_encoder_make(8000,k, rate, polys, 0, fec.CC_TERMINATED, False)
         self.dum_enc = dum_enc = fec.dummy_encoder_make(1500)
         self.dum_dec = dum_dec = fec.dummy_decoder.make(1500)
@@ -517,7 +521,7 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
             pld_const=Const_PLD,
             pld_enc=dum_enc,
             psf_taps=tx_rrc_taps,
-            sps=2,
+            sps=sps,
         )
         self.packet_rx_0 = packet_rx(
             eb=eb,
@@ -529,8 +533,6 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
             psf_taps=rx_rrc_taps,
             sps=sps,
         )
-        self.network_socket_pdu_0_0 = network.socket_pdu('TCP_CLIENT', '127.0.0.1', '3000', 10000, True)
-        self.network_socket_pdu_0 = network.socket_pdu('TCP_SERVER', '127.0.0.1', '2000', 56, True)
         self.channels_channel_model_0 = channels.channel_model(
             noise_voltage=noise,
             frequency_offset=freq_offset,
@@ -539,13 +541,15 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
             noise_seed=0,
             block_tags=True)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(amp)
+        self.blocks_message_strobe_random_0 = blocks.message_strobe_random( pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(16, 0xFF)), blocks.STROBE_GAUSSIAN, 750, 100)
+        self.blocks_message_debug_0_0_0 = blocks.message_debug(True)
 
 
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.network_socket_pdu_0, 'pdus'), (self.packet_tx_danny_0, 'in'))
-        self.msg_connect((self.packet_rx_0, 'pkt out'), (self.network_socket_pdu_0_0, 'pdus'))
+        self.msg_connect((self.blocks_message_strobe_random_0, 'strobe'), (self.packet_tx_danny_0, 'in'))
+        self.msg_connect((self.packet_rx_0, 'precrc'), (self.blocks_message_debug_0_0_0, 'print'))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.packet_rx_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.qtgui_const_sink_x_0, 0))
@@ -582,6 +586,7 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
         self.set_rx_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts*self.sps, 1.0, self.eb, (11*self.sps*self.nfilts)))
         self.set_tx_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0, self.eb, (5*self.sps*self.nfilts)))
         self.packet_rx_0.set_sps(self.sps)
+        self.packet_tx_danny_0.set_sps(self.sps)
 
     def get_rep(self):
         return self.rep
@@ -631,6 +636,18 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
         self.set_rx_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts*self.sps, 1.0, self.eb, (11*self.sps*self.nfilts)))
         self.set_tx_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0, self.eb, (5*self.sps*self.nfilts)))
         self.packet_rx_0.set_eb(self.eb)
+
+    def get_unused_qpsk(self):
+        return self.unused_qpsk
+
+    def set_unused_qpsk(self, unused_qpsk):
+        self.unused_qpsk = unused_qpsk
+
+    def get_unused_16qam(self):
+        return self.unused_16qam
+
+    def set_unused_16qam(self, unused_16qam):
+        self.unused_16qam = unused_16qam
 
     def get_tx_rrc_taps(self):
         return self.tx_rrc_taps

@@ -56,19 +56,20 @@ blocks:
   id: variable_constellation
   parameters:
     comment: ''
-    const_points: digital.psk_4()[0]
+    const_points: '[0.383+0.924j, 0.924+0.383j, 0.924-0.383j, 0.383-0.924j, -0.383-0.924j,
+      -0.924-0.383j, -0.924+0.383j, -0.383+0.924j]'
     dims: '1'
     normalization: digital.constellation.AMPLITUDE_NORMALIZATION
     precision: '8'
-    rot_sym: '4'
-    soft_dec_lut: '''auto'''
-    sym_map: digital.psk_4()[1]
+    rot_sym: '8'
+    soft_dec_lut: None
+    sym_map: '[1,0,7,6,5,4,3,2]'
     type: calcdist
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 12.0]
+    coordinate: [1600, 316.0]
     rotation: 0
     state: enabled
 - name: amp
@@ -203,7 +204,7 @@ blocks:
     comment: ''
     dim1: '1'
     dim2: '1'
-    framebits: '8000'
+    framebits: '128'
     ndim: '0'
     rep: rep
   states:
@@ -244,7 +245,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [752, 44.0]
+    coordinate: [720, 36.0]
     rotation: 0
     state: enabled
 - name: k
@@ -395,6 +396,45 @@ blocks:
     coordinate: [944, 11]
     rotation: 0
     state: enabled
+- name: unused_16qam
+  id: variable_constellation
+  parameters:
+    comment: ''
+    const_points: '[(-3-3j), (-1-3j), (1-3j), (3-3j), (-3-1j), (-1-1j), (1-1j), (3-1j),
+      (-3+1j), (-1+1j), (1+1j), (3+1j), (-3+3j), (-1+3j), (1+3j), (3+3j)]'
+    dims: '1'
+    normalization: digital.constellation.AMPLITUDE_NORMALIZATION
+    precision: '8'
+    rot_sym: '16'
+    soft_dec_lut: None
+    sym_map: '[0, 4, 12, 8, 1, 5, 13, 9, 3, 7, 15, 11, 2, 6, 14, 10]'
+    type: calcdist
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1616, 468.0]
+    rotation: 0
+    state: enabled
+- name: unused_qpsk
+  id: variable_constellation
+  parameters:
+    comment: ''
+    const_points: digital.psk_4()[0]
+    dims: '1'
+    normalization: digital.constellation.AMPLITUDE_NORMALIZATION
+    precision: '8'
+    rot_sym: '4'
+    soft_dec_lut: '''auto'''
+    sym_map: digital.psk_4()[1]
+    type: calcdist
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [480, 12.0]
+    rotation: 0
+    state: enabled
 - name: blocks_message_debug_0_0_0
   id: blocks_message_debug
   parameters:
@@ -406,9 +446,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [928, 344.0]
+    coordinate: [984, 328.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_message_strobe_random_0
   id: blocks_message_strobe_random
   parameters:
@@ -427,7 +467,7 @@ blocks:
     bus_structure: null
     coordinate: [64, 172.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_multiply_const_vxx_0
   id: blocks_multiply_const_vxx
   parameters:
@@ -499,7 +539,7 @@ blocks:
     bus_structure: null
     coordinate: [128, 284.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: network_socket_pdu_0_0
   id: network_socket_pdu
   parameters:
@@ -519,7 +559,7 @@ blocks:
     bus_structure: null
     coordinate: [632, 380.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: packet_rx_0
   id: packet_rx
   parameters:
@@ -557,7 +597,7 @@ blocks:
     pld_const: Const_PLD
     pld_enc: dum_enc
     psf_taps: tx_rrc_taps
-    sps: '2'
+    sps: sps
   states:
     bus_sink: false
     bus_source: false
@@ -1296,8 +1336,8 @@ connections:
 - [packet_rx_0, '1', qtgui_freq_sink_x_0_0, '0']
 - [packet_rx_0, '1', qtgui_time_sink_x_1_0_0_1, '0']
 - [packet_rx_0, '4', qtgui_time_sink_x_1_0_0_0, '0']
-- [packet_rx_0, pkt out, blocks_message_debug_0_0_0, print]
 - [packet_rx_0, pkt out, network_socket_pdu_0_0, pdus]
+- [packet_rx_0, precrc, blocks_message_debug_0_0_0, print]
 - [packet_tx_danny_0, '0', channels_channel_model_0, '0']
 - [virtual_source_0, '0', blocks_multiply_const_vxx_0, '0']
 
