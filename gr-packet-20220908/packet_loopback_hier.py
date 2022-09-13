@@ -29,6 +29,7 @@ from gnuradio import qtgui
 from gnuradio.filter import firdes
 import sip
 from gnuradio import blocks
+import pmt
 from gnuradio import channels
 from gnuradio import digital
 from gnuradio import fec
@@ -38,7 +39,6 @@ import signal
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
-from gnuradio import network
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
 from packet_rx import packet_rx  # grc-generated hier_block
@@ -98,9 +98,6 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
         self.unused_qpsk = unused_qpsk = digital.constellation_calcdist(digital.psk_4()[0], digital.psk_4()[1],
         4, 1, digital.constellation.AMPLITUDE_NORMALIZATION).base()
         self.unused_qpsk.gen_soft_dec_lut(8)
-        self.unused_8psk = unused_8psk = digital.constellation_calcdist([0.383+0.924j, 0.924+0.383j, 0.924-0.383j, 0.383-0.924j, -0.383-0.924j, -0.924-0.383j, -0.924+0.383j, -0.383+0.924j], [0,1,2,3,4,5,6,7],
-        8, 1, digital.constellation.AMPLITUDE_NORMALIZATION).base()
-        self.unused_8psk.gen_soft_dec_lut(8)
         self.tx_rrc_taps = tx_rrc_taps = firdes.root_raised_cosine(nfilts, nfilts,1.0, eb, (5*sps*nfilts))
         self.time_offset = time_offset = 1.0
         self.rx_rrc_taps = rx_rrc_taps = firdes.root_raised_cosine(nfilts, nfilts*sps,1.0, eb, (11*sps*nfilts))
@@ -113,8 +110,8 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
         self.dec_hdr = dec_hdr = fec.repetition_decoder.make(hdr_format.header_nbits(),rep, 0.5)
         self.dec = dec = fec.cc_decoder.make(8000,k, rate, polys, 0, (-1), fec.CC_TERMINATED, False)
         self.amp = amp = 1.0
-        self.Const_HDR = Const_HDR = digital.constellation_calcdist(digital.psk_2()[0], digital.psk_2()[1],
-        2, 1, digital.constellation.AMPLITUDE_NORMALIZATION).base()
+        self.Const_HDR = Const_HDR = digital.constellation_calcdist(digital.psk_4()[0], digital.psk_4()[1],
+        4, 1, digital.constellation.AMPLITUDE_NORMALIZATION).base()
         self.Const_HDR.gen_soft_dec_lut(8)
 
         ##################################################
@@ -535,8 +532,6 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
             psf_taps=rx_rrc_taps,
             sps=sps,
         )
-        self.network_socket_pdu_0_0 = network.socket_pdu('TCP_CLIENT', '127.0.0.1', '3000', 10000, True)
-        self.network_socket_pdu_0 = network.socket_pdu('TCP_SERVER', '127.0.0.1', '2000', 15000, True)
         self.channels_channel_model_0 = channels.channel_model(
             noise_voltage=noise,
             frequency_offset=freq_offset,
@@ -545,13 +540,15 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
             noise_seed=0,
             block_tags=True)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(amp)
+        self.blocks_message_strobe_random_0 = blocks.message_strobe_random( pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(16, 0x1F)), blocks.STROBE_GAUSSIAN, 750, 50)
+        self.blocks_message_debug_0_0_0 = blocks.message_debug(True)
 
 
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.network_socket_pdu_0, 'pdus'), (self.packet_tx_danny_0, 'in'))
-        self.msg_connect((self.packet_rx_0, 'pkt out'), (self.network_socket_pdu_0_0, 'pdus'))
+        self.msg_connect((self.blocks_message_strobe_random_0, 'strobe'), (self.packet_tx_danny_0, 'in'))
+        self.msg_connect((self.packet_rx_0, 'precrc'), (self.blocks_message_debug_0_0_0, 'print'))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.packet_rx_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.qtgui_const_sink_x_0, 0))
@@ -644,12 +641,6 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
 
     def set_unused_qpsk(self, unused_qpsk):
         self.unused_qpsk = unused_qpsk
-
-    def get_unused_8psk(self):
-        return self.unused_8psk
-
-    def set_unused_8psk(self, unused_8psk):
-        self.unused_8psk = unused_8psk
 
     def get_tx_rrc_taps(self):
         return self.tx_rrc_taps

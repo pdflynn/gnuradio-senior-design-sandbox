@@ -37,13 +37,13 @@ blocks:
   id: variable_constellation
   parameters:
     comment: ''
-    const_points: digital.psk_2()[0]
+    const_points: digital.psk_4()[0]
     dims: '1'
     normalization: digital.constellation.AMPLITUDE_NORMALIZATION
     precision: '8'
-    rot_sym: '2'
+    rot_sym: '4'
     soft_dec_lut: '''auto'''
-    sym_map: digital.psk_2()[1]
+    sym_map: digital.psk_4()[1]
     type: calcdist
   states:
     bus_sink: false
@@ -396,26 +396,6 @@ blocks:
     coordinate: [944, 11]
     rotation: 0
     state: enabled
-- name: unused_8psk
-  id: variable_constellation
-  parameters:
-    comment: ''
-    const_points: '[0.383+0.924j, 0.924+0.383j, 0.924-0.383j, 0.383-0.924j, -0.383-0.924j,
-      -0.924-0.383j, -0.924+0.383j, -0.383+0.924j]'
-    dims: '1'
-    normalization: digital.constellation.AMPLITUDE_NORMALIZATION
-    precision: '8'
-    rot_sym: '8'
-    soft_dec_lut: '"auto"'
-    sym_map: '[0,1,2,3,4,5,6,7]'
-    type: calcdist
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1600, 316.0]
-    rotation: 0
-    state: enabled
 - name: unused_qpsk
   id: variable_constellation
   parameters:
@@ -448,7 +428,7 @@ blocks:
     bus_structure: null
     coordinate: [984, 328.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_message_strobe_random_0
   id: blocks_message_strobe_random
   parameters:
@@ -459,7 +439,7 @@ blocks:
     maxoutbuf: '0'
     mean: '750'
     minoutbuf: '0'
-    msg: ' pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(256, 0x1F))'
+    msg: ' pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(16, 0x1F))'
     std: '50'
   states:
     bus_sink: false
@@ -467,7 +447,7 @@ blocks:
     bus_structure: null
     coordinate: [64, 172.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_multiply_const_vxx_0
   id: blocks_multiply_const_vxx
   parameters:
@@ -539,7 +519,7 @@ blocks:
     bus_structure: null
     coordinate: [128, 284.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: network_socket_pdu_0_0
   id: network_socket_pdu
   parameters:
@@ -559,7 +539,7 @@ blocks:
     bus_structure: null
     coordinate: [736, 412.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: packet_rx_0
   id: packet_rx
   parameters:
@@ -1336,8 +1316,8 @@ connections:
 - [packet_rx_0, '1', qtgui_freq_sink_x_0_0, '0']
 - [packet_rx_0, '1', qtgui_time_sink_x_1_0_0_1, '0']
 - [packet_rx_0, '4', qtgui_time_sink_x_1_0_0_0, '0']
-- [packet_rx_0, pkt out, blocks_message_debug_0_0_0, print]
 - [packet_rx_0, pkt out, network_socket_pdu_0_0, pdus]
+- [packet_rx_0, precrc, blocks_message_debug_0_0_0, print]
 - [packet_tx_danny_0, '0', channels_channel_model_0, '0']
 - [virtual_source_0, '0', blocks_multiply_const_vxx_0, '0']
 
