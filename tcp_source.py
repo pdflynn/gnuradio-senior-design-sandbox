@@ -8,14 +8,14 @@ PORT = 2000
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect((IP, PORT))
 
-filename = "LONG_transmit_msg.txt"
+filename = "image.jpg"
 
 messages = list()
 with open(filename, "rb") as f:
     # message = str.encode("Greetings!")
     # messages = f.readlines()
     while True:
-        chunk = f.read(16)  # read 8 bytes
+        chunk = f.read(128)  # read 256 bytes
         messages.append(chunk)
         if not chunk:
             break
@@ -23,11 +23,12 @@ with open(filename, "rb") as f:
 # while True:
 try:
     for message in messages:
-        delay = 0.1 * random.random()  # wait random amount of time
+        delay = 0.01 * random.random()  # wait random amount of time
         print("Sending", message)
         sock.sendto(message, (IP, PORT))
         time.sleep(delay)
-    sock.sendto(str.encode(" "), (IP, PORT))
+    sock.sendto(str.encode("\n"), (IP, PORT))
+    sock.sendto(str.encode("\n"), (IP, PORT))
 
 except Exception as e:
     print(e)

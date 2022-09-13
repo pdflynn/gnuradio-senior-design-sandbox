@@ -10,7 +10,7 @@ sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.bind((IP, PORT))
 sock.listen(1)
 
-filename = "received.txt"
+filename = "received.jpg"
 
 # delete output file if it exists
 if os.path.exists(filename):

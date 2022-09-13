@@ -56,20 +56,20 @@ blocks:
   id: variable_constellation
   parameters:
     comment: ''
-    const_points: '[0.383+0.924j, 0.924+0.383j, 0.924-0.383j, 0.383-0.924j, -0.383-0.924j,
-      -0.924-0.383j, -0.924+0.383j, -0.383+0.924j]'
+    const_points: '[(-3-3j), (-1-3j), (1-3j), (3-3j), (-3-1j), (-1-1j), (1-1j), (3-1j),
+      (-3+1j), (-1+1j), (1+1j), (3+1j), (-3+3j), (-1+3j), (1+3j), (3+3j)]'
     dims: '1'
     normalization: digital.constellation.AMPLITUDE_NORMALIZATION
     precision: '8'
-    rot_sym: '8'
-    soft_dec_lut: None
-    sym_map: '[1,0,7,6,5,4,3,2]'
+    rot_sym: '16'
+    soft_dec_lut: '"auto"'
+    sym_map: '[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]'
     type: calcdist
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1600, 316.0]
+    coordinate: [1600, 476.0]
     rotation: 0
     state: enabled
 - name: amp
@@ -140,7 +140,7 @@ blocks:
     comment: ''
     dim1: '1'
     dim2: '1'
-    framebits: '1500'
+    framebits: '2080'
     ndim: '0'
     value: '"ok"'
   states:
@@ -156,7 +156,7 @@ blocks:
     comment: ''
     dim1: '1'
     dim2: '1'
-    framebits: '1500'
+    framebits: '2080'
     ndim: '0'
   states:
     bus_sink: false
@@ -396,24 +396,24 @@ blocks:
     coordinate: [944, 11]
     rotation: 0
     state: enabled
-- name: unused_16qam
+- name: unused_8psk
   id: variable_constellation
   parameters:
     comment: ''
-    const_points: '[(-3-3j), (-1-3j), (1-3j), (3-3j), (-3-1j), (-1-1j), (1-1j), (3-1j),
-      (-3+1j), (-1+1j), (1+1j), (3+1j), (-3+3j), (-1+3j), (1+3j), (3+3j)]'
+    const_points: '[0.383+0.924j, 0.924+0.383j, 0.924-0.383j, 0.383-0.924j, -0.383-0.924j,
+      -0.924-0.383j, -0.924+0.383j, -0.383+0.924j]'
     dims: '1'
     normalization: digital.constellation.AMPLITUDE_NORMALIZATION
     precision: '8'
-    rot_sym: '16'
-    soft_dec_lut: None
-    sym_map: '[0, 4, 12, 8, 1, 5, 13, 9, 3, 7, 15, 11, 2, 6, 14, 10]'
+    rot_sym: '8'
+    soft_dec_lut: '"auto"'
+    sym_map: '[0,1,2,3,4,5,6,7]'
     type: calcdist
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1616, 468.0]
+    coordinate: [1600, 316.0]
     rotation: 0
     state: enabled
 - name: unused_qpsk
@@ -448,7 +448,7 @@ blocks:
     bus_structure: null
     coordinate: [984, 328.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_message_strobe_random_0
   id: blocks_message_strobe_random
   parameters:
@@ -459,15 +459,15 @@ blocks:
     maxoutbuf: '0'
     mean: '750'
     minoutbuf: '0'
-    msg: ' pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(16, 0xFF))'
-    std: '100'
+    msg: ' pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(256, 0x1F))'
+    std: '50'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [64, 172.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_multiply_const_vxx_0
   id: blocks_multiply_const_vxx
   parameters:
@@ -529,7 +529,7 @@ blocks:
     host: 127.0.0.1
     maxoutbuf: '0'
     minoutbuf: '0'
-    mtu: '56'
+    mtu: '15000'
     port: '2000'
     tcp_no_delay: 'True'
     type: TCP_SERVER
@@ -539,7 +539,7 @@ blocks:
     bus_structure: null
     coordinate: [128, 284.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: network_socket_pdu_0_0
   id: network_socket_pdu
   parameters:
@@ -557,9 +557,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [632, 380.0]
+    coordinate: [736, 412.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: packet_rx_0
   id: packet_rx
   parameters:
@@ -1336,8 +1336,8 @@ connections:
 - [packet_rx_0, '1', qtgui_freq_sink_x_0_0, '0']
 - [packet_rx_0, '1', qtgui_time_sink_x_1_0_0_1, '0']
 - [packet_rx_0, '4', qtgui_time_sink_x_1_0_0_0, '0']
+- [packet_rx_0, pkt out, blocks_message_debug_0_0_0, print]
 - [packet_rx_0, pkt out, network_socket_pdu_0_0, pdus]
-- [packet_rx_0, precrc, blocks_message_debug_0_0_0, print]
 - [packet_tx_danny_0, '0', channels_channel_model_0, '0']
 - [virtual_source_0, '0', blocks_multiply_const_vxx_0, '0']
 
