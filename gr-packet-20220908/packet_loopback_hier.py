@@ -24,21 +24,21 @@ import os
 import sys
 sys.path.append(os.environ.get('GRC_HIER_PATH', os.path.expanduser('~/.grc_gnuradio')))
 
+from PyQt5 import Qt
+from gnuradio import qtgui
+from gnuradio.filter import firdes
+import sip
 from gnuradio import blocks
 import pmt
 from gnuradio import digital
 from gnuradio import fec
 from gnuradio import gr
-from gnuradio.filter import firdes
 from gnuradio.fft import window
 import signal
-from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import soapy
-from gnuradio.qtgui import Range, RangeWidget
-from PyQt5 import QtCore
 from packet_tx_danny import packet_tx_danny  # grc-generated hier_block
 
 
@@ -98,7 +98,6 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
         self.tx_rrc_taps = tx_rrc_taps = firdes.root_raised_cosine(nfilts, nfilts,1.0, eb, (5*sps*nfilts))
         self.sdr_samp_rate = sdr_samp_rate = 2e6
         self.rx_rrc_taps = rx_rrc_taps = firdes.root_raised_cosine(nfilts, nfilts*sps,1.0, eb, (11*sps*nfilts))
-        self.noise = noise = 0.0
         self.freq_center = freq_center = 915e6
         self.enc_hdr = enc_hdr = fec.repetition_encoder_make(128, rep)
         self.enc = enc = fec.cc_encoder_make(8000,k, rate, polys, 0, fec.CC_TERMINATED, False)
@@ -107,7 +106,6 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
         self.dec_hdr = dec_hdr = fec.repetition_decoder.make(hdr_format.header_nbits(),rep, 0.5)
         self.dec = dec = fec.cc_decoder.make(8000,k, rate, polys, 0, (-1), fec.CC_TERMINATED, False)
         self.bandwidth = bandwidth = 10e6
-        self.amp = amp = 1.0
         self.Const_HDR = Const_HDR = digital.constellation_calcdist(digital.psk_4()[0], digital.psk_4()[1],
         4, 1, digital.constellation.AMPLITUDE_NORMALIZATION).base()
         self.Const_HDR.gen_soft_dec_lut(8)
@@ -128,6 +126,91 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
         self.soapy_limesdr_sink_0.set_frequency(0, freq_center)
         self.soapy_limesdr_sink_0.set_frequency_correction(0, 0)
         self.soapy_limesdr_sink_0.set_gain(0, min(max(20.0, -12.0), 64.0))
+        self.qtgui_freq_sink_x_0_0_0 = qtgui.freq_sink_c(
+            1024, #size
+            window.WIN_BLACKMAN_hARRIS, #wintype
+            0, #fc
+            1, #bw
+            "", #name
+            1,
+            None # parent
+        )
+        self.qtgui_freq_sink_x_0_0_0.set_update_time(0.10)
+        self.qtgui_freq_sink_x_0_0_0.set_y_axis((-140), 10)
+        self.qtgui_freq_sink_x_0_0_0.set_y_label('Relative Gain', 'dB')
+        self.qtgui_freq_sink_x_0_0_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, 0.0, 0, "")
+        self.qtgui_freq_sink_x_0_0_0.enable_autoscale(False)
+        self.qtgui_freq_sink_x_0_0_0.enable_grid(False)
+        self.qtgui_freq_sink_x_0_0_0.set_fft_average(1.0)
+        self.qtgui_freq_sink_x_0_0_0.enable_axis_labels(True)
+        self.qtgui_freq_sink_x_0_0_0.enable_control_panel(False)
+        self.qtgui_freq_sink_x_0_0_0.set_fft_window_normalized(False)
+
+        self.qtgui_freq_sink_x_0_0_0.disable_legend()
+
+
+        labels = ['', '', '', '', '',
+            '', '', '', '', '']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ["blue", "red", "green", "black", "cyan",
+            "magenta", "yellow", "dark red", "dark green", "dark blue"]
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+
+        for i in range(1):
+            if len(labels[i]) == 0:
+                self.qtgui_freq_sink_x_0_0_0.set_line_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_freq_sink_x_0_0_0.set_line_label(i, labels[i])
+            self.qtgui_freq_sink_x_0_0_0.set_line_width(i, widths[i])
+            self.qtgui_freq_sink_x_0_0_0.set_line_color(i, colors[i])
+            self.qtgui_freq_sink_x_0_0_0.set_line_alpha(i, alphas[i])
+
+        self._qtgui_freq_sink_x_0_0_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0_0_0.qwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_freq_sink_x_0_0_0_win)
+        self.qtgui_const_sink_x_0_0_0_0 = qtgui.const_sink_c(
+            800, #size
+            "", #name
+            1, #number of inputs
+            None # parent
+        )
+        self.qtgui_const_sink_x_0_0_0_0.set_update_time(0.10)
+        self.qtgui_const_sink_x_0_0_0_0.set_y_axis((-2), 2)
+        self.qtgui_const_sink_x_0_0_0_0.set_x_axis((-2), 2)
+        self.qtgui_const_sink_x_0_0_0_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, "")
+        self.qtgui_const_sink_x_0_0_0_0.enable_autoscale(False)
+        self.qtgui_const_sink_x_0_0_0_0.enable_grid(False)
+        self.qtgui_const_sink_x_0_0_0_0.enable_axis_labels(True)
+
+        self.qtgui_const_sink_x_0_0_0_0.disable_legend()
+
+        labels = ['', '', '', '', '',
+            '', '', '', '', '']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ["blue", "red", "red", "red", "red",
+            "red", "red", "red", "red", "red"]
+        styles = [0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0]
+        markers = [0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0]
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+
+        for i in range(1):
+            if len(labels[i]) == 0:
+                self.qtgui_const_sink_x_0_0_0_0.set_line_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_const_sink_x_0_0_0_0.set_line_label(i, labels[i])
+            self.qtgui_const_sink_x_0_0_0_0.set_line_width(i, widths[i])
+            self.qtgui_const_sink_x_0_0_0_0.set_line_color(i, colors[i])
+            self.qtgui_const_sink_x_0_0_0_0.set_line_style(i, styles[i])
+            self.qtgui_const_sink_x_0_0_0_0.set_line_marker(i, markers[i])
+            self.qtgui_const_sink_x_0_0_0_0.set_line_alpha(i, alphas[i])
+
+        self._qtgui_const_sink_x_0_0_0_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0_0_0_0.qwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_const_sink_x_0_0_0_0_win)
         self.packet_tx_danny_0 = packet_tx_danny(
             hdr_const=Const_HDR,
             hdr_enc=enc_hdr,
@@ -137,23 +220,15 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
             psf_taps=tx_rrc_taps,
             sps=sps,
         )
-        self._noise_range = Range(0, 5, 0.01, 0.0, 200)
-        self._noise_win = RangeWidget(self._noise_range, self.set_noise, "Noise Amp", "counter_slider", float, QtCore.Qt.Horizontal)
-        self.top_grid_layout.addWidget(self._noise_win, 0, 0, 1, 1)
-        for r in range(0, 1):
-            self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 1):
-            self.top_grid_layout.setColumnStretch(c, 1)
         self.blocks_message_strobe_random_0 = blocks.message_strobe_random( pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(16, 0x1F)), blocks.STROBE_GAUSSIAN, 750, 50)
-        self._amp_range = Range(0, 2, 0.01, 1.0, 200)
-        self._amp_win = RangeWidget(self._amp_range, self.set_amp, "Amplitude", "counter_slider", float, QtCore.Qt.Horizontal)
-        self.top_layout.addWidget(self._amp_win)
 
 
         ##################################################
         # Connections
         ##################################################
         self.msg_connect((self.blocks_message_strobe_random_0, 'strobe'), (self.packet_tx_danny_0, 'in'))
+        self.connect((self.packet_tx_danny_0, 0), (self.qtgui_const_sink_x_0_0_0_0, 0))
+        self.connect((self.packet_tx_danny_0, 0), (self.qtgui_freq_sink_x_0_0_0, 0))
         self.connect((self.packet_tx_danny_0, 0), (self.soapy_limesdr_sink_0, 0))
 
 
@@ -254,12 +329,6 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
     def set_rx_rrc_taps(self, rx_rrc_taps):
         self.rx_rrc_taps = rx_rrc_taps
 
-    def get_noise(self):
-        return self.noise
-
-    def set_noise(self, noise):
-        self.noise = noise
-
     def get_freq_center(self):
         return self.freq_center
 
@@ -311,12 +380,6 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
     def set_bandwidth(self, bandwidth):
         self.bandwidth = bandwidth
         self.soapy_limesdr_sink_0.set_bandwidth(0, self.bandwidth)
-
-    def get_amp(self):
-        return self.amp
-
-    def set_amp(self, amp):
-        self.amp = amp
 
     def get_Const_HDR(self):
         return self.Const_HDR
