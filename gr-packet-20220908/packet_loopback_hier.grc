@@ -56,20 +56,19 @@ blocks:
   id: variable_constellation
   parameters:
     comment: ''
-    const_points: '[(-3-3j), (-1-3j), (1-3j), (3-3j), (-3-1j), (-1-1j), (1-1j), (3-1j),
-      (-3+1j), (-1+1j), (1+1j), (3+1j), (-3+3j), (-1+3j), (1+3j), (3+3j)]'
+    const_points: digital.psk_4()[0]
     dims: '1'
     normalization: digital.constellation.AMPLITUDE_NORMALIZATION
     precision: '8'
-    rot_sym: '16'
-    soft_dec_lut: '"auto"'
-    sym_map: '[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]'
+    rot_sym: '4'
+    soft_dec_lut: '''auto'''
+    sym_map: digital.psk_4()[1]
     type: calcdist
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1600, 476.0]
+    coordinate: [480, 12.0]
     rotation: 0
     state: enabled
 - name: amp
@@ -350,7 +349,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '4'
   states:
     bus_sink: false
     bus_source: false
@@ -396,23 +395,24 @@ blocks:
     coordinate: [944, 11]
     rotation: 0
     state: enabled
-- name: unused_qpsk
+- name: unused_16qam
   id: variable_constellation
   parameters:
     comment: ''
-    const_points: digital.psk_4()[0]
+    const_points: '[(-3-3j), (-1-3j), (1-3j), (3-3j), (-3-1j), (-1-1j), (1-1j), (3-1j),
+      (-3+1j), (-1+1j), (1+1j), (3+1j), (-3+3j), (-1+3j), (1+3j), (3+3j)]'
     dims: '1'
     normalization: digital.constellation.AMPLITUDE_NORMALIZATION
     precision: '8'
-    rot_sym: '4'
-    soft_dec_lut: '''auto'''
-    sym_map: digital.psk_4()[1]
+    rot_sym: '16'
+    soft_dec_lut: '"auto"'
+    sym_map: '[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]'
     type: calcdist
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 12.0]
+    coordinate: [1600, 476.0]
     rotation: 0
     state: enabled
 - name: blocks_message_debug_0_0_0
@@ -428,7 +428,7 @@ blocks:
     bus_structure: null
     coordinate: [984, 328.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_message_strobe_random_0
   id: blocks_message_strobe_random
   parameters:
@@ -437,17 +437,17 @@ blocks:
     comment: ''
     dist: blocks.STROBE_GAUSSIAN
     maxoutbuf: '0'
-    mean: '750'
+    mean: '100'
     minoutbuf: '0'
     msg: ' pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(16, 0x1F))'
-    std: '50'
+    std: '10'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [64, 172.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_multiply_const_vxx_0
   id: blocks_multiply_const_vxx
   parameters:
@@ -519,7 +519,7 @@ blocks:
     bus_structure: null
     coordinate: [128, 284.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: network_socket_pdu_0_0
   id: network_socket_pdu
   parameters:
@@ -537,9 +537,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 388.0]
+    coordinate: [688, 372.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: packet_rx_0
   id: packet_rx
   parameters:
@@ -560,7 +560,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [232, 409]
+    coordinate: [336, 456.0]
     rotation: 0
     state: enabled
 - name: packet_tx_danny_0
@@ -583,6 +583,25 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [608, 176.0]
+    rotation: 0
+    state: true
+- name: pdu_random_pdu_0
+  id: pdu_random_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    length_modulo: '2'
+    mask: '0xFF'
+    maxoutbuf: '0'
+    maxsize: '100'
+    minoutbuf: '0'
+    minsize: '50'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [360, 204.0]
     rotation: 0
     state: true
 - name: qtgui_const_sink_x_0
@@ -766,7 +785,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [568, 532.0]
+    coordinate: [752, 532.0]
     rotation: 0
     state: enabled
 - name: qtgui_freq_sink_x_0
@@ -928,7 +947,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [568, 696.0]
+    coordinate: [752, 696.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_1
@@ -1122,7 +1141,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [536, 804.0]
+    coordinate: [720, 804.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_1_0_0_1
@@ -1219,7 +1238,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [568, 604.0]
+    coordinate: [752, 604.0]
     rotation: 0
     state: enabled
 - name: tab0
@@ -1305,7 +1324,7 @@ blocks:
     state: enabled
 
 connections:
-- [blocks_message_strobe_random_0, strobe, packet_tx_danny_0, in]
+- [blocks_message_strobe_random_0, strobe, pdu_random_pdu_0, generate]
 - [blocks_multiply_const_vxx_0, '0', packet_rx_0, '0']
 - [channels_channel_model_0, '0', chan_data, '0']
 - [channels_channel_model_0, '0', qtgui_const_sink_x_0, '0']
@@ -1319,6 +1338,7 @@ connections:
 - [packet_rx_0, pkt out, network_socket_pdu_0_0, pdus]
 - [packet_rx_0, precrc, blocks_message_debug_0_0_0, print]
 - [packet_tx_danny_0, '0', channels_channel_model_0, '0']
+- [pdu_random_pdu_0, pdus, packet_tx_danny_0, in]
 - [virtual_source_0, '0', blocks_multiply_const_vxx_0, '0']
 
 metadata:
