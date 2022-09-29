@@ -37,13 +37,13 @@ blocks:
   id: variable_constellation
   parameters:
     comment: ''
-    const_points: digital.psk_4()[0]
+    const_points: digital.psk_2()[0]
     dims: '1'
     normalization: digital.constellation.AMPLITUDE_NORMALIZATION
     precision: '8'
     rot_sym: '4'
     soft_dec_lut: '''auto'''
-    sym_map: digital.psk_4()[1]
+    sym_map: digital.psk_2()[1]
     type: calcdist
   states:
     bus_sink: false
@@ -259,6 +259,48 @@ blocks:
     coordinate: [1400, 700.0]
     rotation: 0
     state: enabled
+- name: loop_bw_mult
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: ''
+    label: Timing Loop BW Mult
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '1'
+    step: '0.5'
+    stop: '10'
+    value: '1'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [400, 788.0]
+    rotation: 0
+    state: true
+- name: mark_offset
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: ''
+    label: Mark Delay Offset
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: int
+    start: '-15'
+    step: '1'
+    stop: '15'
+    value: '0'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [248, 788.0]
+    rotation: 0
+    state: true
 - name: nfilts
   id: variable
   parameters:
@@ -437,10 +479,10 @@ blocks:
     comment: ''
     dist: blocks.STROBE_GAUSSIAN
     maxoutbuf: '0'
-    mean: '100'
+    mean: '250'
     minoutbuf: '0'
     msg: ' pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(16, 0x1F))'
-    std: '10'
+    std: '1'
   states:
     bus_sink: false
     bus_source: false
@@ -545,11 +587,13 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
+    bw_mult: loop_bw_mult
     comment: ''
     eb: eb
     hdr_const: Const_HDR
     hdr_dec: dec_hdr
     hdr_format: hdr_format
+    mark_delay_offset: mark_offset
     maxoutbuf: '0'
     minoutbuf: '0'
     pld_const: Const_PLD
@@ -560,7 +604,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [336, 456.0]
+    coordinate: [336, 504.0]
     rotation: 0
     state: enabled
 - name: packet_tx_danny_0
@@ -572,6 +616,7 @@ blocks:
     hdr_const: Const_HDR
     hdr_enc: enc_hdr
     hdr_format: hdr_format
+    man_filt_delay: '150'
     maxoutbuf: '0'
     minoutbuf: '0'
     pld_const: Const_PLD
@@ -1335,8 +1380,7 @@ connections:
 - [packet_rx_0, '1', qtgui_freq_sink_x_0_0, '0']
 - [packet_rx_0, '1', qtgui_time_sink_x_1_0_0_1, '0']
 - [packet_rx_0, '4', qtgui_time_sink_x_1_0_0_0, '0']
-- [packet_rx_0, pkt out, network_socket_pdu_0_0, pdus]
-- [packet_rx_0, precrc, blocks_message_debug_0_0_0, print]
+- [packet_rx_0, pkt out, blocks_message_debug_0_0_0, print]
 - [packet_tx_danny_0, '0', channels_channel_model_0, '0']
 - [pdu_random_pdu_0, pdus, packet_tx_danny_0, in]
 - [virtual_source_0, '0', blocks_multiply_const_vxx_0, '0']

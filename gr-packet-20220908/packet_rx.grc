@@ -37,7 +37,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: mark_delays[sps]
+    value: mark_delays[sps] + mark_delay_offset
   states:
     bus_sink: false
     bus_source: false
@@ -49,7 +49,7 @@ blocks:
   id: variable
   parameters:
     comment: "Tag Marking Delay for \nCorr Est block, indexed\nby sps.\n\nFound empirically."
-    value: '[0, 0, 34, 56, 87, 119]'
+    value: '[0, 0, 34, 56, 87, 119, 146, 174, 203, 231, 260, 289, 317, 346, 374]'
   states:
     bus_sink: false
     bus_source: false
@@ -128,7 +128,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '{1: preamble_dummy, 3: preamble_rep}'
+    value: '{1: preamble_dummy, 3: preamble_rep, 9: preamble_rep}'
   states:
     bus_sink: false
     bus_source: false
@@ -184,6 +184,23 @@ blocks:
     coordinate: [1320, 496.0]
     rotation: 180
     state: enabled
+- name: bw_mult
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: ''
+    short_id: ''
+    type: eng_float
+    value: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [320, 500.0]
+    rotation: 0
+    state: true
 - name: digital_constellation_soft_decoder_cf_0
   id: digital_constellation_soft_decoder_cf
   parameters:
@@ -322,7 +339,7 @@ blocks:
     comment: ''
     filter_size: nfilts
     init_phase: nfilts/2
-    loop_bw: 6.28/400.0
+    loop_bw: bw_mult*6.28/400.0
     max_dev: '1.5'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -460,6 +477,23 @@ blocks:
     coordinate: [904, 11]
     rotation: 0
     state: enabled
+- name: mark_delay_offset
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: ''
+    short_id: ''
+    type: intx
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 500.0]
+    rotation: 0
+    state: true
 - name: pad_sink_0
   id: pad_sink
   parameters:

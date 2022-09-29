@@ -103,6 +103,8 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
         self.time_offset = time_offset = 1.0
         self.rx_rrc_taps = rx_rrc_taps = firdes.root_raised_cosine(nfilts, nfilts*sps,1.0, eb, (11*sps*nfilts))
         self.noise = noise = 0.0
+        self.mark_offset = mark_offset = 0
+        self.loop_bw_mult = loop_bw_mult = 1
         self.freq_offset = freq_offset = 0
         self.enc_hdr = enc_hdr = fec.repetition_encoder_make(128, rep)
         self.enc = enc = fec.cc_encoder_make(8000,k, rate, polys, 0, fec.CC_TERMINATED, False)
@@ -111,7 +113,7 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
         self.dec_hdr = dec_hdr = fec.repetition_decoder.make(hdr_format.header_nbits(),rep, 0.5)
         self.dec = dec = fec.cc_decoder.make(8000,k, rate, polys, 0, (-1), fec.CC_TERMINATED, False)
         self.amp = amp = 1.0
-        self.Const_HDR = Const_HDR = digital.constellation_calcdist(digital.psk_4()[0], digital.psk_4()[1],
+        self.Const_HDR = Const_HDR = digital.constellation_calcdist(digital.psk_2()[0], digital.psk_2()[1],
         4, 1, digital.constellation.AMPLITUDE_NORMALIZATION).base()
         self.Const_HDR.gen_soft_dec_lut(8)
 
@@ -174,6 +176,12 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
+        self._mark_offset_range = Range((-15), 15, 1, 0, 200)
+        self._mark_offset_win = RangeWidget(self._mark_offset_range, self.set_mark_offset, "Mark Delay Offset", "counter_slider", int, QtCore.Qt.Horizontal)
+        self.top_layout.addWidget(self._mark_offset_win)
+        self._loop_bw_mult_range = Range(1, 10, 0.5, 1, 200)
+        self._loop_bw_mult_win = RangeWidget(self._loop_bw_mult_range, self.set_loop_bw_mult, "Timing Loop BW Mult", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.top_layout.addWidget(self._loop_bw_mult_win)
         self._freq_offset_range = Range(-0.5, 0.5, 0.0001, 0, 200)
         self._freq_offset_win = RangeWidget(self._freq_offset_range, self.set_freq_offset, "Freq. Offset", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._freq_offset_win, 0, 1, 1, 1)
@@ -519,16 +527,19 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
             hdr_const=Const_HDR,
             hdr_enc=enc_hdr,
             hdr_format=hdr_format,
+            man_filt_delay=150,
             pld_const=Const_PLD,
             pld_enc=dum_enc,
             psf_taps=tx_rrc_taps,
             sps=sps,
         )
         self.packet_rx_0 = packet_rx(
+            bw_mult=loop_bw_mult,
             eb=eb,
             hdr_const=Const_HDR,
             hdr_dec=dec_hdr,
             hdr_format=hdr_format,
+            mark_delay_offset=mark_offset,
             pld_const=Const_PLD,
             pld_dec=dum_dec,
             psf_taps=rx_rrc_taps,
@@ -542,7 +553,7 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
             noise_seed=0,
             block_tags=True)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(amp)
-        self.blocks_message_strobe_random_0 = blocks.message_strobe_random( pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(16, 0x1F)), blocks.STROBE_GAUSSIAN, 100, 10)
+        self.blocks_message_strobe_random_0 = blocks.message_strobe_random( pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(16, 0x1F)), blocks.STROBE_GAUSSIAN, 250, 1)
         self.blocks_message_debug_0_0_0 = blocks.message_debug(True)
 
 
@@ -550,7 +561,7 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.msg_connect((self.blocks_message_strobe_random_0, 'strobe'), (self.pdu_random_pdu_0, 'generate'))
-        self.msg_connect((self.packet_rx_0, 'precrc'), (self.blocks_message_debug_0_0_0, 'print'))
+        self.msg_connect((self.packet_rx_0, 'pkt out'), (self.blocks_message_debug_0_0_0, 'print'))
         self.msg_connect((self.pdu_random_pdu_0, 'pdus'), (self.packet_tx_danny_0, 'in'))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.packet_rx_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.blocks_multiply_const_vxx_0, 0))
@@ -672,6 +683,20 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
     def set_noise(self, noise):
         self.noise = noise
         self.channels_channel_model_0.set_noise_voltage(self.noise)
+
+    def get_mark_offset(self):
+        return self.mark_offset
+
+    def set_mark_offset(self, mark_offset):
+        self.mark_offset = mark_offset
+        self.packet_rx_0.set_mark_delay_offset(self.mark_offset)
+
+    def get_loop_bw_mult(self):
+        return self.loop_bw_mult
+
+    def set_loop_bw_mult(self, loop_bw_mult):
+        self.loop_bw_mult = loop_bw_mult
+        self.packet_rx_0.set_bw_mult(self.loop_bw_mult)
 
     def get_freq_offset(self):
         return self.freq_offset
