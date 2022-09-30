@@ -40,6 +40,7 @@ from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import pdu
 from gnuradio import soapy
+from gnuradio import zeromq
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
 from packet_tx_ota import packet_tx_ota  # grc-generated hier_block
@@ -87,21 +88,21 @@ class ota_tx(gr.top_block, Qt.QWidget):
         self.Const_PLD = Const_PLD = digital.constellation_calcdist(digital.psk_4()[0], digital.psk_4()[1],
         4, 1, digital.constellation.AMPLITUDE_NORMALIZATION).base()
         self.Const_PLD.gen_soft_dec_lut(8)
-        self.sps = sps = 10
+        self.sps = sps = 4
         self.rep = rep = 3
         self.rate = rate = 2
         self.polys = polys = [109, 79]
         self.nfilts = nfilts = 32
         self.k = k = 7
         self.hdr_format = hdr_format = digital.header_format_counter(digital.packet_utils.default_access_code, 3, Const_PLD.bits_per_symbol())
-        self.eb = eb = 0.25
+        self.eb = eb = 0.6
         self.unused_16QAM = unused_16QAM = digital.constellation_calcdist([(-3-3j), (-1-3j), (1-3j), (3-3j), (-3-1j), (-1-1j), (1-1j), (3-1j), (-3+1j), (-1+1j), (1+1j), (3+1j), (-3+3j), (-1+3j), (1+3j), (3+3j)], [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
         16, 1, digital.constellation.AMPLITUDE_NORMALIZATION).base()
         self.unused_16QAM.gen_soft_dec_lut(8)
         self.tx_rrc_taps = tx_rrc_taps = firdes.root_raised_cosine(nfilts, nfilts,1.0, eb, (5*sps*nfilts))
         self.sdr_samp_rate = sdr_samp_rate = 1e6
         self.rx_rrc_taps = rx_rrc_taps = firdes.root_raised_cosine(nfilts, nfilts*sps,1.0, eb, (11*sps*nfilts))
-        self.rf_gain = rf_gain = 40
+        self.rf_gain = rf_gain = 10
         self.gain_linear = gain_linear = .5
         self.freq_center = freq_center = 917e6
         self.enc_hdr = enc_hdr = fec.repetition_encoder_make(128, rep)
@@ -118,12 +119,13 @@ class ota_tx(gr.top_block, Qt.QWidget):
         ##################################################
         # Blocks
         ##################################################
-        self._rf_gain_range = Range(-12, 64, 1, 40, 200)
+        self._rf_gain_range = Range(-12, 64, 1, 10, 200)
         self._rf_gain_win = RangeWidget(self._rf_gain_range, self.set_rf_gain, "LimeSDR Gain [dB]", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._rf_gain_win)
         self._gain_linear_range = Range(0.25, 10, 0.25, .5, 200)
         self._gain_linear_win = RangeWidget(self._gain_linear_range, self.set_gain_linear, "'gain_linear'", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._gain_linear_win)
+        self.zeromq_pub_sink_0 = zeromq.pub_sink(gr.sizeof_gr_complex, 1, 'tcp://127.0.0.1:49203', 100, False, (-1), '')
         self.soapy_limesdr_sink_0 = None
         dev = 'driver=lime'
         stream_args = ''
@@ -137,6 +139,57 @@ class ota_tx(gr.top_block, Qt.QWidget):
         self.soapy_limesdr_sink_0.set_frequency(0, freq_center)
         self.soapy_limesdr_sink_0.set_frequency_correction(0, 0)
         self.soapy_limesdr_sink_0.set_gain(0, min(max(rf_gain, -12.0), 64.0))
+        self.qtgui_time_sink_x_1_0 = qtgui.time_sink_c(
+            2048, #size
+            sdr_samp_rate, #samp_rate
+            "Before PSF", #name
+            1, #number of inputs
+            None # parent
+        )
+        self.qtgui_time_sink_x_1_0.set_update_time(0.10)
+        self.qtgui_time_sink_x_1_0.set_y_axis(-1, 1)
+
+        self.qtgui_time_sink_x_1_0.set_y_label('Amplitude', "")
+
+        self.qtgui_time_sink_x_1_0.enable_tags(True)
+        self.qtgui_time_sink_x_1_0.set_trigger_mode(qtgui.TRIG_MODE_TAG, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "packet_len")
+        self.qtgui_time_sink_x_1_0.enable_autoscale(False)
+        self.qtgui_time_sink_x_1_0.enable_grid(False)
+        self.qtgui_time_sink_x_1_0.enable_axis_labels(True)
+        self.qtgui_time_sink_x_1_0.enable_control_panel(True)
+        self.qtgui_time_sink_x_1_0.enable_stem_plot(False)
+
+
+        labels = ['Signal 1', 'Signal 2', 'Signal 3', 'Signal 4', 'Signal 5',
+            'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ['blue', 'red', 'green', 'black', 'cyan',
+            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+        styles = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        markers = [-1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1]
+
+
+        for i in range(2):
+            if len(labels[i]) == 0:
+                if (i % 2 == 0):
+                    self.qtgui_time_sink_x_1_0.set_line_label(i, "Re{{Data {0}}}".format(i/2))
+                else:
+                    self.qtgui_time_sink_x_1_0.set_line_label(i, "Im{{Data {0}}}".format(i/2))
+            else:
+                self.qtgui_time_sink_x_1_0.set_line_label(i, labels[i])
+            self.qtgui_time_sink_x_1_0.set_line_width(i, widths[i])
+            self.qtgui_time_sink_x_1_0.set_line_color(i, colors[i])
+            self.qtgui_time_sink_x_1_0.set_line_style(i, styles[i])
+            self.qtgui_time_sink_x_1_0.set_line_marker(i, markers[i])
+            self.qtgui_time_sink_x_1_0.set_line_alpha(i, alphas[i])
+
+        self._qtgui_time_sink_x_1_0_win = sip.wrapinstance(self.qtgui_time_sink_x_1_0.qwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_time_sink_x_1_0_win)
         self.qtgui_time_sink_x_1 = qtgui.time_sink_c(
             2048, #size
             sdr_samp_rate, #samp_rate
@@ -150,7 +203,7 @@ class ota_tx(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_1.set_y_label('Amplitude', "")
 
         self.qtgui_time_sink_x_1.enable_tags(True)
-        self.qtgui_time_sink_x_1.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
+        self.qtgui_time_sink_x_1.set_trigger_mode(qtgui.TRIG_MODE_TAG, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "packet_len")
         self.qtgui_time_sink_x_1.enable_autoscale(False)
         self.qtgui_time_sink_x_1.enable_grid(False)
         self.qtgui_time_sink_x_1.enable_axis_labels(True)
@@ -273,7 +326,7 @@ class ota_tx(gr.top_block, Qt.QWidget):
 
         self._qtgui_const_sink_x_0_0_0_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0_0_0_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_const_sink_x_0_0_0_0_win)
-        self.pdu_random_pdu_0 = pdu.random_pdu(32, 32, 0xFF, 2)
+        self.pdu_random_pdu_0 = pdu.random_pdu(16, 16, 0xFF, 2)
         self.packet_tx_ota_0 = packet_tx_ota(
             bandwidth=0,
             eb=eb,
@@ -287,7 +340,7 @@ class ota_tx(gr.top_block, Qt.QWidget):
             sps=sps,
         )
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(gain_linear)
-        self.blocks_message_strobe_random_0 = blocks.message_strobe_random( pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(16, 0xAA)), blocks.STROBE_UNIFORM, 1000, 0)
+        self.blocks_message_strobe_random_0 = blocks.message_strobe_random( pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(1, 0xFF)), blocks.STROBE_UNIFORM, 1000, 0)
 
 
         ##################################################
@@ -298,8 +351,10 @@ class ota_tx(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.qtgui_const_sink_x_0_0_0_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.qtgui_freq_sink_x_0_0_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.soapy_limesdr_sink_0, 0))
+        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.zeromq_pub_sink_0, 0))
         self.connect((self.packet_tx_ota_0, 0), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.packet_tx_ota_0, 0), (self.qtgui_time_sink_x_1, 0))
+        self.connect((self.packet_tx_ota_0, 1), (self.qtgui_time_sink_x_1_0, 0))
 
 
     def closeEvent(self, event):
@@ -394,6 +449,7 @@ class ota_tx(gr.top_block, Qt.QWidget):
         self.sdr_samp_rate = sdr_samp_rate
         self.qtgui_freq_sink_x_0_0_0.set_frequency_range(self.freq_center, (self.sdr_samp_rate/2))
         self.qtgui_time_sink_x_1.set_samp_rate(self.sdr_samp_rate)
+        self.qtgui_time_sink_x_1_0.set_samp_rate(self.sdr_samp_rate)
         self.soapy_limesdr_sink_0.set_sample_rate(0, self.sdr_samp_rate)
 
     def get_rx_rrc_taps(self):

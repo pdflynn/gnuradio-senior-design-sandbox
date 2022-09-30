@@ -553,7 +553,7 @@ class packet_loopback_hier(gr.top_block, Qt.QWidget):
             noise_seed=0,
             block_tags=True)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(amp)
-        self.blocks_message_strobe_random_0 = blocks.message_strobe_random( pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(16, 0x1F)), blocks.STROBE_GAUSSIAN, 250, 1)
+        self.blocks_message_strobe_random_0 = blocks.message_strobe_random( pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(16, 0x1F)), blocks.STROBE_UNIFORM, 1000, 0)
         self.blocks_message_debug_0_0_0 = blocks.message_debug(True)
 
 

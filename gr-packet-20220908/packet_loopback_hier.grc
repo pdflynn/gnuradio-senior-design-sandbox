@@ -477,12 +477,12 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    dist: blocks.STROBE_GAUSSIAN
+    dist: blocks.STROBE_UNIFORM
     maxoutbuf: '0'
-    mean: '250'
+    mean: '1000'
     minoutbuf: '0'
     msg: ' pmt.cons(pmt.PMT_NIL, pmt.make_u8vector(16, 0x1F))'
-    std: '1'
+    std: '0'
   states:
     bus_sink: false
     bus_source: false

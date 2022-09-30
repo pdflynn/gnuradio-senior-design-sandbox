@@ -100,7 +100,7 @@ class sample_explorer(gr.top_block, Qt.QWidget):
         self.if_gain = if_gain = 10
         self.fc = fc = 917e6
         self.dum_enc = dum_enc = fec.dummy_encoder_make(4128)
-        self.bb_gain = bb_gain = 10
+        self.bb_gain = bb_gain = 0
 
         ##################################################
         # Blocks
@@ -152,7 +152,7 @@ class sample_explorer(gr.top_block, Qt.QWidget):
         self.tab0_layout_3 = Qt.QBoxLayout(Qt.QBoxLayout.TopToBottom, self.tab0_widget_3)
         self.tab0_grid_layout_3 = Qt.QGridLayout()
         self.tab0_layout_3.addLayout(self.tab0_grid_layout_3)
-        self.tab0.addTab(self.tab0_widget_3, 'Tab 3')
+        self.tab0.addTab(self.tab0_widget_3, 'Corr Est I/Q')
         self.tab0_widget_4 = Qt.QWidget()
         self.tab0_layout_4 = Qt.QBoxLayout(Qt.QBoxLayout.TopToBottom, self.tab0_widget_4)
         self.tab0_grid_layout_4 = Qt.QGridLayout()
@@ -165,6 +165,9 @@ class sample_explorer(gr.top_block, Qt.QWidget):
         self._if_gain_range = Range(0, 40, 2, 10, 200)
         self._if_gain_win = RangeWidget(self._if_gain_range, self.set_if_gain, "IF Gain [dB]", "counter_slider", int, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._if_gain_win)
+        self._bb_gain_range = Range(0, 62, 2, 0, 200)
+        self._bb_gain_win = RangeWidget(self._bb_gain_range, self.set_bb_gain, "BB Gain [dB]", "counter_slider", int, QtCore.Qt.Horizontal)
+        self.top_layout.addWidget(self._bb_gain_win)
         self.soapy_hackrf_source_0 = None
         dev = 'driver=hackrf'
         stream_args = ''
@@ -178,7 +181,58 @@ class sample_explorer(gr.top_block, Qt.QWidget):
         self.soapy_hackrf_source_0.set_frequency(0, fc)
         self.soapy_hackrf_source_0.set_gain(0, 'AMP', True)
         self.soapy_hackrf_source_0.set_gain(0, 'LNA', min(max(if_gain, 0.0), 40.0))
-        self.soapy_hackrf_source_0.set_gain(0, 'VGA', min(max(16, 0.0), 62.0))
+        self.soapy_hackrf_source_0.set_gain(0, 'VGA', min(max(bb_gain, 0.0), 62.0))
+        self.qtgui_time_sink_x_0_0_0_0 = qtgui.time_sink_c(
+            2048, #size
+            samp_rate, #samp_rate
+            "", #name
+            1, #number of inputs
+            None # parent
+        )
+        self.qtgui_time_sink_x_0_0_0_0.set_update_time(0.10)
+        self.qtgui_time_sink_x_0_0_0_0.set_y_axis(0, 200)
+
+        self.qtgui_time_sink_x_0_0_0_0.set_y_label('Amplitude', "")
+
+        self.qtgui_time_sink_x_0_0_0_0.enable_tags(True)
+        self.qtgui_time_sink_x_0_0_0_0.set_trigger_mode(qtgui.TRIG_MODE_TAG, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, 'corr_est')
+        self.qtgui_time_sink_x_0_0_0_0.enable_autoscale(False)
+        self.qtgui_time_sink_x_0_0_0_0.enable_grid(True)
+        self.qtgui_time_sink_x_0_0_0_0.enable_axis_labels(True)
+        self.qtgui_time_sink_x_0_0_0_0.enable_control_panel(True)
+        self.qtgui_time_sink_x_0_0_0_0.enable_stem_plot(False)
+
+
+        labels = ['Signal 1', 'Signal 2', 'Signal 3', 'Signal 4', 'Signal 5',
+            'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ['blue', 'red', 'green', 'black', 'cyan',
+            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+        styles = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        markers = [0, 0, -1, -1, -1,
+            -1, -1, -1, -1, -1]
+
+
+        for i in range(2):
+            if len(labels[i]) == 0:
+                if (i % 2 == 0):
+                    self.qtgui_time_sink_x_0_0_0_0.set_line_label(i, "Re{{Data {0}}}".format(i/2))
+                else:
+                    self.qtgui_time_sink_x_0_0_0_0.set_line_label(i, "Im{{Data {0}}}".format(i/2))
+            else:
+                self.qtgui_time_sink_x_0_0_0_0.set_line_label(i, labels[i])
+            self.qtgui_time_sink_x_0_0_0_0.set_line_width(i, widths[i])
+            self.qtgui_time_sink_x_0_0_0_0.set_line_color(i, colors[i])
+            self.qtgui_time_sink_x_0_0_0_0.set_line_style(i, styles[i])
+            self.qtgui_time_sink_x_0_0_0_0.set_line_marker(i, markers[i])
+            self.qtgui_time_sink_x_0_0_0_0.set_line_alpha(i, alphas[i])
+
+        self._qtgui_time_sink_x_0_0_0_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0_0_0_0.qwidget(), Qt.QWidget)
+        self.tab0_layout_3.addWidget(self._qtgui_time_sink_x_0_0_0_0_win)
         self.qtgui_time_sink_x_0_0_0 = qtgui.time_sink_f(
             2048, #size
             samp_rate, #samp_rate
@@ -192,7 +246,7 @@ class sample_explorer(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_0_0_0.set_y_label('Amplitude', "")
 
         self.qtgui_time_sink_x_0_0_0.enable_tags(True)
-        self.qtgui_time_sink_x_0_0_0.set_trigger_mode(qtgui.TRIG_MODE_TAG, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "corr_start")
+        self.qtgui_time_sink_x_0_0_0.set_trigger_mode(qtgui.TRIG_MODE_TAG, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, 'corr_est')
         self.qtgui_time_sink_x_0_0_0.enable_autoscale(False)
         self.qtgui_time_sink_x_0_0_0.enable_grid(True)
         self.qtgui_time_sink_x_0_0_0.enable_axis_labels(True)
@@ -329,48 +383,6 @@ class sample_explorer(gr.top_block, Qt.QWidget):
 
         self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.qwidget(), Qt.QWidget)
         self.tab0_layout_0.addWidget(self._qtgui_time_sink_x_0_win)
-        self.qtgui_freq_sink_x_0_0_0 = qtgui.freq_sink_c(
-            4096, #size
-            window.WIN_BLACKMAN_hARRIS, #wintype
-            fc, #fc
-            samp_rate, #bw
-            "", #name
-            1,
-            None # parent
-        )
-        self.qtgui_freq_sink_x_0_0_0.set_update_time(0.10)
-        self.qtgui_freq_sink_x_0_0_0.set_y_axis((-140), 10)
-        self.qtgui_freq_sink_x_0_0_0.set_y_label('Relative Gain', 'dB')
-        self.qtgui_freq_sink_x_0_0_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, 0.0, 0, "")
-        self.qtgui_freq_sink_x_0_0_0.enable_autoscale(False)
-        self.qtgui_freq_sink_x_0_0_0.enable_grid(False)
-        self.qtgui_freq_sink_x_0_0_0.set_fft_average(1.0)
-        self.qtgui_freq_sink_x_0_0_0.enable_axis_labels(True)
-        self.qtgui_freq_sink_x_0_0_0.enable_control_panel(True)
-        self.qtgui_freq_sink_x_0_0_0.set_fft_window_normalized(False)
-
-
-
-        labels = ['', '', '', '', '',
-            '', '', '', '', '']
-        widths = [1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1]
-        colors = ["blue", "red", "green", "black", "cyan",
-            "magenta", "yellow", "dark red", "dark green", "dark blue"]
-        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
-            1.0, 1.0, 1.0, 1.0, 1.0]
-
-        for i in range(1):
-            if len(labels[i]) == 0:
-                self.qtgui_freq_sink_x_0_0_0.set_line_label(i, "Data {0}".format(i))
-            else:
-                self.qtgui_freq_sink_x_0_0_0.set_line_label(i, labels[i])
-            self.qtgui_freq_sink_x_0_0_0.set_line_width(i, widths[i])
-            self.qtgui_freq_sink_x_0_0_0.set_line_color(i, colors[i])
-            self.qtgui_freq_sink_x_0_0_0.set_line_alpha(i, alphas[i])
-
-        self._qtgui_freq_sink_x_0_0_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0_0_0.qwidget(), Qt.QWidget)
-        self.tab1_layout_2.addWidget(self._qtgui_freq_sink_x_0_0_0_win)
         self.qtgui_freq_sink_x_0_0 = qtgui.freq_sink_c(
             4096, #size
             window.WIN_BLACKMAN_hARRIS, #wintype
@@ -455,11 +467,8 @@ class sample_explorer(gr.top_block, Qt.QWidget):
 
         self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.qwidget(), Qt.QWidget)
         self.tab1_layout_0.addWidget(self._qtgui_freq_sink_x_0_win)
-        self.digital_corr_est_cc_0 = digital.corr_est_cc(modulated_sync_word, sps, mark_delay, 0.999, digital.THRESHOLD_ABSOLUTE)
+        self.digital_corr_est_cc_0 = digital.corr_est_cc(modulated_sync_word, sps, mark_delay, 0.999, digital.THRESHOLD_DYNAMIC)
         self.blocks_complex_to_mag_squared_0 = blocks.complex_to_mag_squared(1)
-        self._bb_gain_range = Range(0, 62, 2, 10, 200)
-        self._bb_gain_win = RangeWidget(self._bb_gain_range, self.set_bb_gain, "BB Gain [dB]", "counter_slider", int, QtCore.Qt.Horizontal)
-        self.top_layout.addWidget(self._bb_gain_win)
 
 
         ##################################################
@@ -468,8 +477,8 @@ class sample_explorer(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.qtgui_time_sink_x_0_0_0, 0))
         self.connect((self.digital_corr_est_cc_0, 1), (self.blocks_complex_to_mag_squared_0, 0))
         self.connect((self.digital_corr_est_cc_0, 0), (self.qtgui_freq_sink_x_0_0, 0))
-        self.connect((self.digital_corr_est_cc_0, 1), (self.qtgui_freq_sink_x_0_0_0, 0))
         self.connect((self.digital_corr_est_cc_0, 0), (self.qtgui_time_sink_x_0_0, 0))
+        self.connect((self.digital_corr_est_cc_0, 1), (self.qtgui_time_sink_x_0_0_0_0, 0))
         self.connect((self.soapy_hackrf_source_0, 0), (self.digital_corr_est_cc_0, 0))
         self.connect((self.soapy_hackrf_source_0, 0), (self.qtgui_freq_sink_x_0, 0))
         self.connect((self.soapy_hackrf_source_0, 0), (self.qtgui_time_sink_x_0, 0))
@@ -562,10 +571,10 @@ class sample_explorer(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate
         self.qtgui_freq_sink_x_0.set_frequency_range(self.fc, self.samp_rate)
         self.qtgui_freq_sink_x_0_0.set_frequency_range(self.fc, self.samp_rate)
-        self.qtgui_freq_sink_x_0_0_0.set_frequency_range(self.fc, self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_0_0.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_0_0_0.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_0_0_0_0.set_samp_rate(self.samp_rate)
         self.soapy_hackrf_source_0.set_sample_rate(0, self.samp_rate)
 
     def get_modulated_sync_word(self):
@@ -595,7 +604,6 @@ class sample_explorer(gr.top_block, Qt.QWidget):
         self.fc = fc
         self.qtgui_freq_sink_x_0.set_frequency_range(self.fc, self.samp_rate)
         self.qtgui_freq_sink_x_0_0.set_frequency_range(self.fc, self.samp_rate)
-        self.qtgui_freq_sink_x_0_0_0.set_frequency_range(self.fc, self.samp_rate)
         self.soapy_hackrf_source_0.set_frequency(0, self.fc)
 
     def get_dum_enc(self):
@@ -609,6 +617,7 @@ class sample_explorer(gr.top_block, Qt.QWidget):
 
     def set_bb_gain(self, bb_gain):
         self.bb_gain = bb_gain
+        self.soapy_hackrf_source_0.set_gain(0, 'VGA', min(max(self.bb_gain, 0.0), 62.0))
 
 
 

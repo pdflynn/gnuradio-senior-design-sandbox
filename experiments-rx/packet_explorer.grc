@@ -64,13 +64,13 @@ blocks:
     start: '0'
     step: '2'
     stop: '62'
-    value: '10'
+    value: '0'
     widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [928, 132.0]
+    coordinate: [1096, 132.0]
     rotation: 0
     state: true
 - name: dum_enc
@@ -180,7 +180,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [808, 140.0]
+    coordinate: [976, 140.0]
     rotation: 0
     state: true
 - name: mark_delay
@@ -320,9 +320,24 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [608, 512.0]
+    coordinate: [776, 512.0]
     rotation: 0
     state: true
+- name: blocks_correctiq_0
+  id: blocks_correctiq
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [248, 200.0]
+    rotation: 0
+    state: bypassed
 - name: digital_corr_est_cc_0
   id: digital_corr_est_cc
   parameters:
@@ -335,12 +350,12 @@ blocks:
     sps: sps
     symbols: modulated_sync_word
     threshold: '0.999'
-    threshold_method: digital.THRESHOLD_ABSOLUTE
+    threshold_method: digital.THRESHOLD_DYNAMIC
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [296, 164.0]
+    coordinate: [464, 164.0]
     rotation: 0
     state: enabled
 - name: qtgui_freq_sink_x_0
@@ -421,7 +436,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [296, 396.0]
+    coordinate: [464, 396.0]
     rotation: 0
     state: true
 - name: qtgui_freq_sink_x_0_0
@@ -502,88 +517,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 396.0]
-    rotation: 0
-    state: true
-- name: qtgui_freq_sink_x_0_0_0
-  id: qtgui_freq_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    alpha1: '1.0'
-    alpha10: '1.0'
-    alpha2: '1.0'
-    alpha3: '1.0'
-    alpha4: '1.0'
-    alpha5: '1.0'
-    alpha6: '1.0'
-    alpha7: '1.0'
-    alpha8: '1.0'
-    alpha9: '1.0'
-    autoscale: 'False'
-    average: '1.0'
-    axislabels: 'True'
-    bw: samp_rate
-    color1: '"blue"'
-    color10: '"dark blue"'
-    color2: '"red"'
-    color3: '"green"'
-    color4: '"black"'
-    color5: '"cyan"'
-    color6: '"magenta"'
-    color7: '"yellow"'
-    color8: '"dark red"'
-    color9: '"dark green"'
-    comment: ''
-    ctrlpanel: 'True'
-    fc: fc
-    fftsize: '4096'
-    freqhalf: 'True'
-    grid: 'False'
-    gui_hint: tab1@2
-    label: Relative Gain
-    label1: ''
-    label10: ''''''
-    label2: ''''''
-    label3: ''''''
-    label4: ''''''
-    label5: ''''''
-    label6: ''''''
-    label7: ''''''
-    label8: ''''''
-    label9: ''''''
-    legend: 'True'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    name: '""'
-    nconnections: '1'
-    norm_window: 'False'
-    showports: 'False'
-    tr_chan: '0'
-    tr_level: '0.0'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_tag: '""'
-    type: complex
-    units: dB
-    update_time: '0.10'
-    width1: '1'
-    width10: '1'
-    width2: '1'
-    width3: '1'
-    width4: '1'
-    width5: '1'
-    width6: '1'
-    width7: '1'
-    width8: '1'
-    width9: '1'
-    wintype: window.WIN_BLACKMAN_hARRIS
-    ymax: '10'
-    ymin: '-140'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [584, 572.0]
+    coordinate: [768, 396.0]
     rotation: 0
     state: true
 - name: qtgui_time_sink_x_0
@@ -680,7 +614,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [296, 308.0]
+    coordinate: [464, 308.0]
     rotation: 0
     state: true
 - name: qtgui_time_sink_x_0_0
@@ -777,7 +711,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 308.0]
+    coordinate: [776, 308.0]
     rotation: 0
     state: true
 - name: qtgui_time_sink_x_0_0_0
@@ -853,7 +787,7 @@ blocks:
     tr_level: '0.0'
     tr_mode: qtgui.TRIG_MODE_TAG
     tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_tag: '"corr_start"'
+    tr_tag: corr_est
     type: float
     update_time: '0.10'
     width1: '1'
@@ -874,7 +808,104 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [800, 492.0]
+    coordinate: [968, 492.0]
+    rotation: 0
+    state: true
+- name: qtgui_time_sink_x_0_0_0_0
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'True'
+    entags: 'True'
+    grid: 'True'
+    gui_hint: tab0@3
+    label1: Signal 1
+    label10: Signal 10
+    label2: Signal 2
+    label3: Signal 3
+    label4: Signal 4
+    label5: Signal 5
+    label6: Signal 6
+    label7: Signal 7
+    label8: Signal 8
+    label9: Signal 9
+    legend: 'True'
+    marker1: '0'
+    marker10: '-1'
+    marker2: '0'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '""'
+    nconnections: '1'
+    size: '2048'
+    srate: samp_rate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_TAG
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: corr_est
+    type: complex
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '200'
+    ymin: '0'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [768, 588.0]
     rotation: 0
     state: true
 - name: soapy_hackrf_source_0
@@ -892,14 +923,14 @@ blocks:
     minoutbuf: '0'
     samp_rate: samp_rate
     type: fc32
-    vga: '16'
+    vga: bb_gain
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [40, 188.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: tab0
   id: qtgui_tab_widget
   parameters:
@@ -919,7 +950,7 @@ blocks:
     label18: Tab 18
     label19: Tab 19
     label2: Correlation Estimate
-    label3: Tab 3
+    label3: Corr Est I/Q
     label4: Tab 4
     label5: Tab 5
     label6: Tab 6
@@ -968,16 +999,42 @@ blocks:
     coordinate: [544, 12.0]
     rotation: 0
     state: true
+- name: zeromq_sub_source_0
+  id: zeromq_sub_source
+  parameters:
+    address: tcp://127.0.0.1:49203
+    affinity: ''
+    alias: ''
+    comment: USRP sample rate = 768kHz
+    hwm: '-1'
+    key: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    pass_tags: 'False'
+    timeout: '100'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [24, 276.0]
+    rotation: 0
+    state: disabled
 
 connections:
 - [blocks_complex_to_mag_squared_0, '0', qtgui_time_sink_x_0_0_0, '0']
+- [blocks_correctiq_0, '0', digital_corr_est_cc_0, '0']
+- [blocks_correctiq_0, '0', qtgui_freq_sink_x_0, '0']
+- [blocks_correctiq_0, '0', qtgui_time_sink_x_0, '0']
 - [digital_corr_est_cc_0, '0', qtgui_freq_sink_x_0_0, '0']
 - [digital_corr_est_cc_0, '0', qtgui_time_sink_x_0_0, '0']
 - [digital_corr_est_cc_0, '1', blocks_complex_to_mag_squared_0, '0']
-- [digital_corr_est_cc_0, '1', qtgui_freq_sink_x_0_0_0, '0']
-- [soapy_hackrf_source_0, '0', digital_corr_est_cc_0, '0']
-- [soapy_hackrf_source_0, '0', qtgui_freq_sink_x_0, '0']
-- [soapy_hackrf_source_0, '0', qtgui_time_sink_x_0, '0']
+- [digital_corr_est_cc_0, '1', qtgui_time_sink_x_0_0_0_0, '0']
+- [soapy_hackrf_source_0, '0', blocks_correctiq_0, '0']
+- [zeromq_sub_source_0, '0', digital_corr_est_cc_0, '0']
+- [zeromq_sub_source_0, '0', qtgui_freq_sink_x_0, '0']
+- [zeromq_sub_source_0, '0', qtgui_time_sink_x_0, '0']
 
 metadata:
   file_format: 1
