@@ -311,6 +311,27 @@ blocks:
     coordinate: [600, 700.0]
     rotation: 0
     state: enabled
+- name: rf_gain
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: ''
+    label: LimeSDR Gain [dB]
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '-12'
+    step: '1'
+    stop: '64'
+    value: '40'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1440, 624.0]
+    rotation: 0
+    state: true
 - name: rx_rrc_taps
   id: variable_rrc_filter_taps
   parameters:
@@ -332,7 +353,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 256e3
+    value: 1e6
   states:
     bus_sink: false
     bus_source: false
@@ -890,7 +911,7 @@ blocks:
     comment: ''
     dev_args: ''
     freq_correction: '0'
-    gain: '30'
+    gain: rf_gain
     samp_rate: sdr_samp_rate
     type: fc32
   states:
@@ -911,7 +932,7 @@ connections:
 - [network_socket_pdu_0, pdus, packet_tx_ota_0, in]
 - [packet_tx_danny_0, '0', blocks_multiply_const_vxx_0, '0']
 - [packet_tx_ota_0, '0', blocks_multiply_const_vxx_0, '0']
-- [packet_tx_ota_0, '2', qtgui_time_sink_x_1, '0']
+- [packet_tx_ota_0, '0', qtgui_time_sink_x_1, '0']
 - [pdu_random_pdu_0, pdus, packet_tx_danny_0, in]
 - [pdu_random_pdu_0, pdus, packet_tx_ota_0, in]
 

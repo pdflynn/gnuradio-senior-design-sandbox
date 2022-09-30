@@ -99,8 +99,9 @@ class ota_tx(gr.top_block, Qt.QWidget):
         16, 1, digital.constellation.AMPLITUDE_NORMALIZATION).base()
         self.unused_16QAM.gen_soft_dec_lut(8)
         self.tx_rrc_taps = tx_rrc_taps = firdes.root_raised_cosine(nfilts, nfilts,1.0, eb, (5*sps*nfilts))
-        self.sdr_samp_rate = sdr_samp_rate = 256e3
+        self.sdr_samp_rate = sdr_samp_rate = 1e6
         self.rx_rrc_taps = rx_rrc_taps = firdes.root_raised_cosine(nfilts, nfilts*sps,1.0, eb, (11*sps*nfilts))
+        self.rf_gain = rf_gain = 40
         self.gain_linear = gain_linear = .5
         self.freq_center = freq_center = 917e6
         self.enc_hdr = enc_hdr = fec.repetition_encoder_make(128, rep)
@@ -117,6 +118,9 @@ class ota_tx(gr.top_block, Qt.QWidget):
         ##################################################
         # Blocks
         ##################################################
+        self._rf_gain_range = Range(-12, 64, 1, 40, 200)
+        self._rf_gain_win = RangeWidget(self._rf_gain_range, self.set_rf_gain, "LimeSDR Gain [dB]", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.top_layout.addWidget(self._rf_gain_win)
         self._gain_linear_range = Range(0.25, 10, 0.25, .5, 200)
         self._gain_linear_win = RangeWidget(self._gain_linear_range, self.set_gain_linear, "'gain_linear'", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._gain_linear_win)
@@ -132,7 +136,7 @@ class ota_tx(gr.top_block, Qt.QWidget):
         self.soapy_limesdr_sink_0.set_bandwidth(0, 0)
         self.soapy_limesdr_sink_0.set_frequency(0, freq_center)
         self.soapy_limesdr_sink_0.set_frequency_correction(0, 0)
-        self.soapy_limesdr_sink_0.set_gain(0, min(max(30, -12.0), 64.0))
+        self.soapy_limesdr_sink_0.set_gain(0, min(max(rf_gain, -12.0), 64.0))
         self.qtgui_time_sink_x_1 = qtgui.time_sink_c(
             2048, #size
             sdr_samp_rate, #samp_rate
@@ -295,7 +299,7 @@ class ota_tx(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.qtgui_freq_sink_x_0_0_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.soapy_limesdr_sink_0, 0))
         self.connect((self.packet_tx_ota_0, 0), (self.blocks_multiply_const_vxx_0, 0))
-        self.connect((self.packet_tx_ota_0, 2), (self.qtgui_time_sink_x_1, 0))
+        self.connect((self.packet_tx_ota_0, 0), (self.qtgui_time_sink_x_1, 0))
 
 
     def closeEvent(self, event):
@@ -397,6 +401,13 @@ class ota_tx(gr.top_block, Qt.QWidget):
 
     def set_rx_rrc_taps(self, rx_rrc_taps):
         self.rx_rrc_taps = rx_rrc_taps
+
+    def get_rf_gain(self):
+        return self.rf_gain
+
+    def set_rf_gain(self, rf_gain):
+        self.rf_gain = rf_gain
+        self.soapy_limesdr_sink_0.set_gain(0, min(max(self.rf_gain, -12.0), 64.0))
 
     def get_gain_linear(self):
         return self.gain_linear

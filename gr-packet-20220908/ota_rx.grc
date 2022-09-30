@@ -92,18 +92,6 @@ blocks:
     coordinate: [1696, 12.0]
     rotation: 0
     state: enabled
-- name: bandwidth
-  id: variable
-  parameters:
-    comment: ''
-    value: 10e6
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [392, 372.0]
-    rotation: 0
-    state: true
 - name: dec
   id: variable_cc_decoder_def
   parameters:
@@ -180,7 +168,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '0.22'
+    value: '0.25'
   states:
     bus_sink: false
     bus_source: false
@@ -229,12 +217,12 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 915e6
+    value: 917e6
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [296, 372.0]
+    coordinate: [168, 268.0]
     rotation: 0
     state: true
 - name: hdr_format
@@ -331,19 +319,19 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 2e6
+    value: 1e6
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [184, 372.0]
+    coordinate: [56, 268.0]
     rotation: 0
     state: true
 - name: sps
   id: variable
   parameters:
     comment: ''
-    value: '2'
+    value: '4'
   states:
     bus_sink: false
     bus_source: false
@@ -420,25 +408,6 @@ blocks:
     coordinate: [424, 308.0]
     rotation: 0
     state: enabled
-- name: blocks_null_source_0
-  id: blocks_null_source
-  parameters:
-    affinity: ''
-    alias: ''
-    bus_structure_source: '[[0,],]'
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    num_outputs: '1'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [232, 536.0]
-    rotation: 0
-    state: true
 - name: network_socket_pdu_0_0
   id: network_socket_pdu
   parameters:
@@ -464,11 +433,13 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
+    bw_mult: '1'
     comment: ''
     eb: eb
     hdr_const: Const_HDR
     hdr_dec: dec_hdr
     hdr_format: hdr_format
+    mark_delay_offset: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
     pld_const: Const_PLD
@@ -828,6 +799,126 @@ blocks:
     coordinate: [640, 544.0]
     rotation: 0
     state: enabled
+- name: qtgui_time_sink_x_0
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'True'
+    entags: 'True'
+    grid: 'False'
+    gui_hint: ''
+    label1: Signal 1
+    label10: Signal 10
+    label2: Signal 2
+    label3: Signal 3
+    label4: Signal 4
+    label5: Signal 5
+    label6: Signal 6
+    label7: Signal 7
+    label8: Signal 8
+    label9: Signal 9
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '""'
+    nconnections: '1'
+    size: '1024'
+    srate: sdr_samp_rate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_AUTO
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: complex
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '1'
+    ymin: '-1'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [760, 716.0]
+    rotation: 0
+    state: true
+- name: soapy_hackrf_source_0
+  id: soapy_hackrf_source
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: 'True'
+    bandwidth: '0'
+    center_freq: freq_center
+    comment: ''
+    dev_args: ''
+    gain: '30'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: sdr_samp_rate
+    type: fc32
+    vga: '16'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [112, 436.0]
+    rotation: 0
+    state: true
 - name: soapy_limesdr_source_0
   id: soapy_limesdr_source
   parameters:
@@ -923,11 +1014,12 @@ connections:
 - [blocks_multiply_const_vxx_0, '0', packet_rx_0, '0']
 - [blocks_multiply_const_vxx_0, '0', qtgui_const_sink_x_0_0_0_0, '0']
 - [blocks_multiply_const_vxx_0, '0', qtgui_freq_sink_x_0_0_0, '0']
-- [blocks_null_source_0, '0', blocks_multiply_const_vxx_0, '0']
 - [packet_rx_0, '1', qtgui_const_sink_x_0_0_0, '0']
 - [packet_rx_0, '1', qtgui_freq_sink_x_0_0, '0']
+- [packet_rx_0, '4', qtgui_time_sink_x_0, '0']
 - [packet_rx_0, pkt out, network_socket_pdu_0_0, pdus]
 - [packet_rx_0, precrc, blocks_message_debug_0_0_0, print]
+- [soapy_hackrf_source_0, '0', blocks_multiply_const_vxx_0, '0']
 - [soapy_limesdr_source_0, '0', blocks_multiply_const_vxx_0, '0']
 
 metadata:
